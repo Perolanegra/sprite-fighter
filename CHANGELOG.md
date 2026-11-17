@@ -9,6 +9,62 @@ Mudanças de API dos três pacotes, que andam com a mesma versão
 
 Cada versão é publicada no GitHub Packages pela tag `v<versão>` (ver README, "Publicar").
 
+## [0.2.0] - 2026-11-17
+
+Recurso novo: personagens que interagem com objetos pela **âncora do prop**, não por coordenada fixa (antes, um
+roteiro que punha o personagem e a porta em coordenadas fixas errava a porta).
+
+### @perolanegra/sprite-fighter
+
+- **Âncoras de prop:** todo prop expõe pontos nomeados calculados da caixa atual (acompanham posição e tamanho):
+  `center`, `top`, `bottom`, `left`, `right`. A porta acrescenta `opening` e `front`; `top`/`bottom` são as pontas
+  da passagem.
+  - `registerProp` aceita `anchors: { <nome>: (prop) => Vec2 }` e `opening: (prop) => { box, axis: 'x' | 'y' }`
+    (a passagem, para `enter`/`exit`);
+  - funções novas: `propAnchor`, `propOpening`, `anchorNames`, `BOX_ANCHORS`;
+  - `spawnProp` ganhou `facing` (lado da frente, onde fica a âncora `front`; padrão −1 = esquerda). `Prop.facing` é
+    opcional.
+- **`moveTo`:**
+  - `to` aceita `{ "prop", "anchor", "offset"? }`, resolvido a cada passo (acompanha o prop);
+  - `align: "root" | "center"`: `center` leva ao destino o centro visual (centro da caixa da silhueta da pose) em
+    vez do quadril. `relative` só com `to: [x, y]`, e `align` só com `to`.
+  - `MoveTo` (TS) aceita `to` como função (destino relido a cada passo).
+- **`enter` reescrito:** o centro visual vai até a abertura (`opening`), de onde o ator estiver. A flutuação some
+  perto da passagem; o ator encolhe (`shrink`; padrão até 0,7, menos se precisar para caber no vão) e é recortado
+  pelo plano da abertura. O recorte acompanha o prop.
+- **`exit` novo** (`{ prop, duration, ease?, to?, offset?, scaleTo?, shrink? }`): surge pequeno e recortado na
+  passagem e vai até a âncora (padrão `front`), crescendo até a escala de antes do `enter`. No fim, restaura o
+  `collideProps`.
+- **`Actor`:**
+  - `visualOffset()` e `visualCenter()`: o centro da silhueta da pose em repouso, sem flutuação nem tecido;
+  - `hoverWeight` (0..1): quanto da flutuação vale.
+- **`Director`:**
+  - `passChecks`: em cada `enter`/`exit` (ao cruzar o plano) e em cada contato com prop que tem abertura, o centro
+    visual e quanto ele fica fora do vão;
+  - `entered`: escala e `collideProps` de quem entrou.
+- **Funções puras da passagem:** `passPlan`, `sideDistance`, `planePoint`, `hiddenQuad`, `spanMiss`, `fitScale`,
+  `hoverNear`.
+- **Autoria (`/authoring`):**
+  - `passCheckErrors(checks)` diz o deslocamento em px e para que lado mover (`PASS_TOLERANCE` = 2 px);
+  - `checkScript` confere a âncora citada (`moveTo`, `exit.to`) e se o prop do `enter`/`exit` tem abertura;
+  - `ScriptCatalog.props` ganhou `anchors` e `opening`; a API fluente ganhou `exit(...)`, o `moveTo` com âncora e
+    `align`, e o `facing` do `spawnProp`; o tipo `AnchorJson` é exportado;
+  - JSON Schema: o `to` do `moveTo` é `[x, y]` ou o objeto de âncora.
+- `VERSION` = `'0.2.0'`.
+
+### @perolanegra/sprite-fighter-cli
+
+- `sf validate`: na simulação seca, acusa como **erro** o centro visual fora da abertura num `enter`/`exit` ou num
+  contato com prop, com o deslocamento em px.
+- `sf catalog`: `props.<tipo>` lista `anchors` e `opening`.
+- `sf preview`: tempo-chave também depois de `exit`.
+- `/narrate` (o `narrate.md` do `sf init`): usar âncoras e `enter`/`exit` sempre que a narrativa envolve um objeto.
+  Coordenadas fixas ficam só para posições livres no céu.
+
+### @perolanegra/ngx-sprite-fighter
+
+- Sem mudanças de API: só a versão. O peer passa a `@perolanegra/sprite-fighter` `^0.2.0`.
+
 ## [0.1.1] - 2026-11-17
 
 ### @perolanegra/sprite-fighter-cli
