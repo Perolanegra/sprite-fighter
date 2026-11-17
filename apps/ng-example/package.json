@@ -1,0 +1,9 @@
+{
+  "name": "ng-example",
+  "private": true,
+  "description": "App Angular de exemplo do ngx-sprite-fighter (perseguição e chute giratório).",
+  "scripts": {
+    "start": "ng build ngx-sprite-fighter && ng serve ng-example",
+    "build": "ng build ngx-sprite-fighter && ng build ng-example"
+  }
+}

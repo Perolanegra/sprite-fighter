@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/app",
+    "declaration": false,
+    "types": [],
+    "paths": { "ngx-sprite-fighter": ["../../packages/angular/dist"] }
+  },
+  "angularCompilerOptions": { "strictTemplates": true, "strictInjectionParameters": true },
+  "files": ["src/main.ts"],
+  "include": ["src/**/*.ts"]
+}
