@@ -1,0 +1,25 @@
+{
+  "name": "sprite-fighter",
+  "version": "0.0.0",
+  "description": "Personagens articulados a partir de folhas de peças PNG e cenas de luta 2D roteirizadas.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./authoring": {
+      "types": "./dist/authoring.d.ts",
+      "import": "./dist/authoring.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -b"
+  }
+}
