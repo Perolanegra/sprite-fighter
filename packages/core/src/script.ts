@@ -22,7 +22,17 @@ import { DataError, Reader } from './validate.js';
  * Também aceita só a lista de passos (sem cast/câmera), para trechos.
  */
 
-export type ParamKind = 'number' | 'string' | 'bool' | 'vec2' | 'strings' | 'zoom';
+export type ParamKind = 'number' | 'string' | 'bool' | 'vec2' | 'strings' | 'zoom' | 'target';
+
+/** Destino preso a um prop: a âncora (`opening`, `front`, `top`…) mais um deslocamento (px). */
+export interface AnchorTarget {
+  prop: string;
+  anchor: string;
+  offset: Vec2;
+}
+
+/** `[x, y]` lido (`{ x, y }`) ou âncora de prop. */
+export const isAnchorTarget = (v: unknown): v is AnchorTarget => typeof v === 'object' && v !== null && 'prop' in v;
 
 export interface ParamSpec {
   kind: ParamKind;
@@ -63,9 +73,10 @@ export const COMMANDS: Record<string, CommandSpec> = {
     actor: 'required',
     exactlyOne: ['to', 'route'],
     params: {
-      to: { kind: 'vec2' },
+      to: { kind: 'target', ref: 'prop' },
       route: str(),
       relative: { kind: 'bool' },
+      align: pick(['root', 'center']),
       duration: num(true),
       ease: pick(EASES),
       scaleTo: num(),
@@ -109,6 +120,7 @@ export const COMMANDS: Record<string, CommandSpec> = {
       size: { kind: 'vec2', required: true },
       state: str(),
       appear: num(),
+      facing: num(),
     },
   },
   prop: {
@@ -117,7 +129,11 @@ export const COMMANDS: Record<string, CommandSpec> = {
   },
   enter: {
     actor: 'required',
-    params: { prop: str(true, 'prop'), duration: num(true), ease: pick(EASES) },
+    params: { prop: str(true, 'prop'), duration: num(true), ease: pick(EASES), shrink: num() },
+  },
+  exit: {
+    actor: 'required',
+    params: { prop: str(true, 'prop'), duration: num(true), ease: pick(EASES), to: str(), offset: { kind: 'vec2' }, scaleTo: num(), shrink: num() },
   },
   touch: { actor: 'required', params: { prop: str(true, 'prop'), gap: num() } },
   opacity: { actor: 'required', params: { value: num(true) } },
@@ -206,6 +222,18 @@ function readParam(r: Reader, spec: ParamSpec): unknown {
       return r.array().map((i) => i.string());
     case 'zoom':
       return r.value === null ? null : r.number();
+    case 'target': {
+      if (Array.isArray(r.value)) {
+        const [x, y] = r.pair();
+        return { x, y };
+      }
+      if (typeof r.value !== 'object' || r.value === null) r.fail('esperado [x, y] ou { "prop": "<id>", "anchor": "<âncora>", "offset": [dx, dy] }');
+      for (const k of Object.keys(r.object())) if (!['prop', 'anchor', 'offset'].includes(k)) r.at(k).fail('campo desconhecido no destino (aceitos: prop, anchor, offset)');
+      const prop = r.at('prop').string();
+      const anchor = r.at('anchor').string();
+      const offset = r.at('offset').present ? (([x, y]) => ({ x, y }))(r.at('offset').pair()) : { x: 0, y: 0 };
+      return { prop, anchor, offset } satisfies AnchorTarget;
+    }
   }
 }
 
@@ -225,6 +253,11 @@ function readParams(r: Reader, cmd: string): Record<string, unknown> {
   }
   for (const [key, p] of Object.entries(spec.params)) if (p.required && !(key in out)) r.at(key).fail(`obrigatório em "${cmd}"`);
   if (spec.exactlyOne && spec.exactlyOne.filter((k) => k in out).length !== 1) r.fail(`"${cmd}" precisa de exatamente um de: ${spec.exactlyOne.join(', ')}`);
+  if (cmd === 'moveTo') {
+    if (out['relative'] && isAnchorTarget(out['to'])) r.at('relative').fail('"relative" só vale com "to": [x, y] (a âncora já acompanha o prop; use "offset")');
+    if (out['align'] !== undefined && !('to' in out)) r.at('align').fail('"align" só vale com "to" (numa rota, os pontos são do quadril)');
+  }
+  if (cmd === 'spawnProp' && out['facing'] !== undefined && out['facing'] !== 1 && out['facing'] !== -1) r.at('facing').fail('esperado 1 ou -1');
   return out;
 }
 
@@ -341,7 +374,9 @@ export function parseScript(json: unknown, source = 'roteiro'): Script {
     for (const [key, p] of Object.entries(COMMANDS[cmd]!.params)) {
       const v = params[key];
       if (!p.ref || v === undefined) continue;
-      if (Array.isArray(v)) v.forEach((x, i) => checkRef(`${path}.${key}[${i}]`, x as string, p.ref));
+      if (p.kind === 'target') {
+        if (isAnchorTarget(v)) checkRef(`${path}.${key}.prop`, v.prop, p.ref);
+      } else if (Array.isArray(v)) v.forEach((x, i) => checkRef(`${path}.${key}[${i}]`, x as string, p.ref));
       else checkRef(`${path}.${key}`, v as string, p.ref);
     }
   };

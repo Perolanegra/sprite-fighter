@@ -24,7 +24,8 @@ export interface Motion {
  * Vai até um ponto (ou percorre uma rota) em `duration` s, com easing. A velocidade de cada passo é
  * (ponto da rota agora − ponto do passo anterior) / dt: sem nada somado, termina exatamente no
  * destino; um deslocamento extra (esquiva) se soma em vez de ser desfeito. `scaleTo` muda a
- * escala junto (profundidade: menor = mais longe).
+ * escala junto (profundidade: menor = mais longe). `to` pode ser uma função: o destino é lido de
+ * novo a cada passo (acompanha um prop que se mexe, ou o centro visual que muda com a pose).
  */
 export class MoveTo implements Motion {
   readonly kind = 'moveTo';
@@ -35,7 +36,7 @@ export class MoveTo implements Motion {
   private readonly route: Route | null;
 
   constructor(
-    private readonly params: { to?: Vec2; route?: string | Route; duration: number; ease?: EaseName; scaleTo?: number },
+    private readonly params: { to?: Vec2 | (() => Vec2); route?: string | Route; duration: number; ease?: EaseName; scaleTo?: number },
   ) {
     if (!params.to && !params.route) throw new Error('moveTo: informe "to" ou "route"');
     if (!(params.duration > 0)) throw new Error('moveTo: "duration" precisa ser > 0');
@@ -44,7 +45,8 @@ export class MoveTo implements Motion {
 
   private at(u: number): Vec2 {
     if (this.route) return this.route.point(u);
-    const to = this.params.to!;
+    const t = this.params.to!;
+    const to = typeof t === 'function' ? t() : t;
     return { x: this.from!.x + (to.x - this.from!.x) * u, y: this.from!.y + (to.y - this.from!.y) * u };
   }
 

@@ -6,11 +6,11 @@ import { AUTHOR_FPS, SIM_DT } from './loop.js';
 import type { Vec2 } from './math.js';
 import { Fall, Hover, MoveTo, dash } from './motion.js';
 import type { MoveData } from './move.js';
-import { getPropType } from './props.js';
-import { parseScript, type Script, type ScriptStep } from './script.js';
-import { World, type Fighter, type Prop } from './world.js';
+import { hiddenQuad, hoverNear, fitScale, passPlan, planePoint, sideDistance, spanMiss, type PassPlan } from './passage.js';
+import { getPropType, propAnchor, propOpening } from './props.js';
+import { isAnchorTarget, parseScript, type Script, type ScriptStep } from './script.js';
+import { World, type Fighter, type HitEvent, type Prop } from './world.js';
 
-/** Um personagem do elenco: o Character (carregado) e os golpes dele. */
 /** Evento `step`: um passo do roteiro começou ou terminou. */
 export interface StepEvent {
   id: string | null;
@@ -21,6 +21,24 @@ export interface StepEvent {
   time: number;
 }
 
+/**
+ * Conferência de passagem, registrada na simulação: onde estava o centro visual do ator ao cruzar
+ * o plano de uma abertura (`enter`, `exit`) ou ao encostar num prop que tem abertura (`contact`).
+ * `miss` = px fora do vão no eixo transversal (0 = dentro; negativo = antes do começo do vão, ex.:
+ * acima da porta; positivo = depois do fim, ex.: abaixo).
+ */
+export interface PassCheck {
+  kind: 'enter' | 'exit' | 'contact';
+  actor: string;
+  prop: string;
+  time: number;
+  center: Vec2;
+  axis: 'x' | 'y';
+  span: [number, number];
+  miss: number;
+}
+
+/** Um personagem do elenco: o Character (carregado) e os golpes dele. */
 export interface CastMember {
   character: Character;
   moves?: Map<string, MoveData>;
@@ -100,8 +118,29 @@ const RUN: Record<string, (c: Ctx) => Done> = {
   },
   moveTo({ world, f, p }) {
     const a = f!.actor;
-    let to = p['to'] ? { ...v2(p['to']) } : undefined;
-    if (to && p['relative']) to = { x: a.position.x + to.x, y: a.position.y + to.y };
+    const raw = p['to'];
+    const center = p['align'] === 'center';
+    // Centro visual: o destino vale para o centro da silhueta, não para o quadril.
+    const shift = (q: Vec2): Vec2 => {
+      if (!center) return q;
+      const o = a.visualOffset();
+      return { x: q.x - o.x, y: q.y - o.y };
+    };
+    let to: Vec2 | (() => Vec2) | undefined;
+    if (isAnchorTarget(raw)) {
+      const t = raw;
+      // Resolvida a cada passo: acompanha o prop (posição e tamanho atuais).
+      to = () => {
+        const q = propAnchor(needProp(world, t.prop), t.anchor);
+        return shift({ x: q.x + t.offset.x, y: q.y + t.offset.y });
+      };
+      to();
+    } else if (raw) {
+      let q = { ...v2(raw) };
+      if (p['relative']) q = { x: a.position.x + q.x, y: a.position.y + q.y };
+      const fixed = q;
+      to = center ? () => shift(fixed) : fixed;
+    }
     const m = new MoveTo({ ...(to ? { to } : { route: p['route'] as string }), duration: p['duration'] as number, ease: p['ease'] as EaseName | undefined, scaleTo: p['scaleTo'] as number | undefined });
     world.setMotion(f!.id, m);
     return () => f!.motion !== m;
@@ -154,6 +193,7 @@ const RUN: Record<string, (c: Ctx) => Done> = {
     const state = (p['state'] as string | undefined) ?? def.states[0]!;
     const appear = (p['appear'] as number | undefined) ?? 0.25;
     const prop: Prop = { id: (p['id'] as string | undefined) ?? type, type, box: { x: at.x, y: at.y, w: size.x, h: size.y }, solid: def.solid.includes(state), state, bornAt: now, appear };
+    if (p['facing'] !== undefined) prop.facing = (p['facing'] as number) < 0 ? -1 : 1;
     world.addProp(prop);
     return appear;
   },
@@ -184,38 +224,86 @@ const RUN: Record<string, (c: Ctx) => Done> = {
       return true;
     };
   },
-  enter({ d, world, f, p }) {
+  enter({ d, world, f, p, now }) {
     const a = f!.actor;
-    const prop = world.props.get(p['prop'] as string);
-    if (!prop) throw new Error(`roteiro: o prop "${p['prop']}" ainda não existe (spawnProp vem antes)`);
-    const box = prop.box;
+    const prop = needProp(world, p['prop'] as string);
+    const plan0 = passPlan(needOpening(prop, 'enter'), a.visualCenter(), prop.facing ?? -1);
     const b = a.bounds();
-    // Plano da passagem no meio do prop; o corpo passa inteiro e some do outro lado.
-    const plane = box.x + box.w / 2;
-    const dx = a.facing > 0 ? plane - b.x + 10 : plane - (b.x + b.w) - 10;
-    const dy = box.y + box.h / 2 - (b.y + b.h / 2);
-    const far = 1e5 * a.facing;
-    d.hidden.set(f!.id, [
-      { x: plane, y: box.y },
-      { x: plane + far, y: box.y },
-      { x: plane + far, y: box.y + box.h },
-      { x: plane, y: box.y + box.h },
-    ]);
+    const ext = plan0.axis === 'x' ? b.w : b.h;
+    // Encolhe até caber no vão (no máximo 70 % da escala de agora, se não pedir outra).
+    const shrink = (p['shrink'] as number | undefined) ?? Math.min(0.7, fitScale(plan0, plan0.axis === 'x' ? b.h : b.w));
+    const depth = (ext * shrink) / 2 + 10;
+    d.entered.set(f!.id, { scale: a.scale, collideProps: f!.collideProps });
     f!.collideProps = false;
-    const m = new MoveTo({ to: { x: a.position.x + dx, y: a.position.y + dy }, duration: p['duration'] as number, ease: (p['ease'] as EaseName | undefined) ?? 'cubicIn' });
+    if (plan0.axis === 'x') a.facing = plan0.side < 0 ? 1 : -1;
+    // Plano atual (o prop pode ter mudado), mantendo o lado de onde o ator veio.
+    const plan = (): PassPlan => ({ ...passPlan(needOpening(prop, 'enter'), a.visualCenter()), side: plan0.side });
+    // Destino: o centro visual inteiro do outro lado do plano, no meio do vão.
+    const target = () => {
+      const q = planePoint(plan(), -depth);
+      const o = a.visualOffset();
+      return { x: q.x - o.x, y: q.y - o.y };
+    };
+    d.hidden.set(f!.id, hiddenQuad(plan0));
+    const m = new MoveTo({ to: target, duration: p['duration'] as number, ease: (p['ease'] as EaseName | undefined) ?? 'cubicIn', scaleTo: a.scale * shrink });
     world.setMotion(f!.id, m);
-    return () => {
-      if (f!.motion === m) return false;
+    return passWatch(d, f!, prop.id, 'enter', plan, Math.max(ext, 60), now, () => f!.motion !== m, () => {
       a.opacity = 0;
+      a.hoverWeight = 1;
       d.hidden.delete(f!.id);
       world.setMotion(f!.id, new Hover());
-      return true;
+    });
+  },
+  exit({ d, world, f, p, now }) {
+    const a = f!.actor;
+    const prop = needProp(world, p['prop'] as string);
+    const anchor = (p['to'] as string | undefined) ?? 'front';
+    const off = p['offset'] ? v2(p['offset']) : { x: 0, y: 0 };
+    const dest = () => {
+      const q = propAnchor(prop, anchor);
+      return { x: q.x + off.x, y: q.y + off.y };
     };
+    const plan0 = passPlan(needOpening(prop, 'exit'), dest(), prop.facing ?? -1);
+    const before = d.entered.get(f!.id);
+    d.entered.delete(f!.id);
+    const end = (p['scaleTo'] as number | undefined) ?? before?.scale ?? a.scale;
+    // Nasce pequeno do lado de trás do plano, sem flutuar, e cresce saindo.
+    a.scale = end;
+    a.hoverWeight = 0;
+    a.opacity = 1;
+    if (plan0.axis === 'x') a.facing = plan0.side > 0 ? 1 : -1;
+    a.settle();
+    const b = a.bounds();
+    const ext = plan0.axis === 'x' ? b.w : b.h;
+    const shrink = (p['shrink'] as number | undefined) ?? Math.min(0.7, fitScale(plan0, plan0.axis === 'x' ? b.h : b.w));
+    a.scale = end * shrink;
+    a.settle();
+    const start = planePoint(plan0, -((ext * shrink) / 2 + 10));
+    const o = a.visualOffset();
+    a.position = { x: start.x - o.x, y: start.y - o.y };
+    a.velocity = { x: 0, y: 0 };
+    a.settle();
+    const collide = before?.collideProps ?? f!.collideProps;
+    f!.collideProps = false;
+    const plan = (): PassPlan => ({ ...passPlan(needOpening(prop, 'exit'), a.visualCenter()), side: plan0.side });
+    d.hidden.set(f!.id, hiddenQuad(plan0));
+    const target = () => {
+      const q = dest();
+      const v = a.visualOffset();
+      return { x: q.x - v.x, y: q.y - v.y };
+    };
+    const m = new MoveTo({ to: target, duration: p['duration'] as number, ease: (p['ease'] as EaseName | undefined) ?? 'cubicOut', scaleTo: end });
+    world.setMotion(f!.id, m);
+    return passWatch(d, f!, prop.id, 'exit', plan, Math.max(ext, 60), now, () => f!.motion !== m, () => {
+      a.hoverWeight = 1;
+      d.hidden.delete(f!.id);
+      f!.collideProps = collide;
+      world.setMotion(f!.id, new Hover());
+    });
   },
   touch({ world, f, p }) {
     const a = f!.actor;
-    const prop = world.props.get(p['prop'] as string);
-    if (!prop) throw new Error(`roteiro: o prop "${p['prop']}" ainda não existe (spawnProp vem antes)`);
+    const prop = needProp(world, p['prop'] as string);
     const b = a.bounds();
     const gap = (p['gap'] as number | undefined) ?? 0;
     const face = a.facing > 0 ? prop.box.x - gap : prop.box.x + prop.box.w + gap;
@@ -238,6 +326,44 @@ const RUN: Record<string, (c: Ctx) => Done> = {
   expression: (c) => chooseVariant(c, 'expression'),
   hand: (c) => chooseVariant(c, 'hand'),
 };
+
+function needProp(world: World, id: string): Prop {
+  const prop = world.props.get(id);
+  if (!prop) throw new Error(`roteiro: o prop "${id}" ainda não existe (spawnProp vem antes)`);
+  return prop;
+}
+
+function needOpening(prop: Prop, cmd: string) {
+  const o = propOpening(prop);
+  if (!o) throw new Error(`roteiro: "${cmd}" precisa de um prop com abertura, e "${prop.id}" (${prop.type}) não tem`);
+  return o;
+}
+
+/**
+ * Acompanha a passagem a cada passo: tira a flutuação perto do plano (`reach` px), move o recorte
+ * com o prop e registra a conferência quando o centro visual cruza o plano (ou no fim, se não cruzou).
+ */
+function passWatch(d: Director, f: Fighter, prop: string, kind: 'enter' | 'exit', plan: () => PassPlan, reach: number, start: number, moved: () => boolean, finish: () => void): () => boolean {
+  const a = f.actor;
+  let checked = false;
+  const check = (pl: PassPlan) => {
+    checked = true;
+    const c = a.visualCenter();
+    d.passChecks.push({ kind, actor: f.id, prop, time: d.time, center: c, axis: pl.axis, span: pl.span, miss: spanMiss(pl, c) });
+  };
+  return () => {
+    const pl = plan();
+    const dist = sideDistance(pl, a.visualCenter());
+    a.hoverWeight = hoverNear(dist, reach);
+    d.hidden.set(f.id, hiddenQuad(pl));
+    const crossed = kind === 'enter' ? dist <= 0 : dist >= 0;
+    if (!checked && crossed && d.time > start) check(pl);
+    if (!moved()) return false;
+    if (!checked) check(pl);
+    finish();
+    return true;
+  };
+}
 
 /** expression / hand: escolhe a variante; sem ela na pose atual, a pose fica como está (aviso). */
 function chooseVariant({ d, f, p }: Ctx, kind: string): Done {
@@ -282,8 +408,12 @@ export class Director {
   loop = false;
   timeScale = 1;
   playing = false;
-  /** Atores sendo recortados por um prop ("enter"): id → região escondida (mundo). */
+  /** Atores sendo recortados por um prop ("enter", "exit"): id → região escondida (mundo). */
   readonly hidden = new Map<string, Vec2[]>();
+  /** Quem entrou num prop e ainda não saiu: a escala e o `collideProps` de antes (o `exit` restaura). */
+  readonly entered = new Map<string, { scale: number; collideProps: boolean }>();
+  /** Conferências de passagem da simulação até agora (o `validate` acusa as que erram o vão). */
+  readonly passChecks: PassCheck[] = [];
   readonly bubbles: Bubble[] = [];
   /** Avisos (sem repetir): variante que não existe, por exemplo. Também saem no evento "warning". */
   readonly warnings: string[] = [];
@@ -436,6 +566,8 @@ export class Director {
     this.running = [];
     this.onCount = new Map();
     this.hidden.clear();
+    this.entered.clear();
+    this.passChecks.length = 0;
     this.bubbles.length = 0;
     this.order = 0;
     this.ended = false;
@@ -451,12 +583,25 @@ export class Director {
 
   /** Evento do World ou do diretor: repassa e dispara os passos `on`. */
   private event(name: string, payload: unknown): void {
+    if (name === 'hit') this.contactCheck(payload as HitEvent);
     this.emit(name, payload);
     for (const st of this.onSteps.get(name) ?? []) {
       const n = (this.onCount.get(st) ?? 0) + 1;
       this.onCount.set(st, n);
       if (n === st.nth) this.enqueue(st, this.eventTime + st.delay, payload, null);
     }
+  }
+
+  /** Corpo encostou num prop com abertura: o centro visual estava dentro do vão? */
+  private contactCheck(e: HitEvent): void {
+    if (e.by !== 'prop') return;
+    const prop = this.world.props.get(e.attacker);
+    const op = prop && propOpening(prop);
+    const f = this.world.fighters.get(e.target);
+    if (!op || !f) return;
+    const c = f.actor.visualCenter();
+    const pl = passPlan(op, c);
+    this.passChecks.push({ kind: 'contact', actor: f.id, prop: prop.id, time: this.eventTime, center: c, axis: pl.axis, span: pl.span, miss: spanMiss(pl, c) });
   }
 
   /** Executa os passos da fila que já venceram (inclusive os que eles encadeiam agora). */

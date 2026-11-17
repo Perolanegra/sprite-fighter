@@ -89,6 +89,8 @@ export interface Prop {
   /** Quando surgiu e quanto dura o surgimento (s). */
   bornAt?: number;
   appear?: number;
+  /** Lado da frente (1 = direita, -1 = esquerda): onde fica a âncora `front` (porta). */
+  facing?: 1 | -1;
 }
 
 export interface HitEvent {

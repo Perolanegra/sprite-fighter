@@ -1,6 +1,17 @@
 import type { CanvasRenderer } from './renderer.js';
 import type { Box } from './collision.js';
+import type { Vec2 } from './math.js';
 import type { Prop } from './world.js';
+
+/**
+ * Abertura de um prop (passagem): a caixa por onde o corpo passa e o eixo da passagem
+ * (`x` = atravessa na horizontal, como uma porta vista de lado; `y` = na vertical, como um alçapão).
+ * O plano da passagem fica no meio da caixa, ao longo do eixo.
+ */
+export interface PropOpening {
+  box: Box;
+  axis: 'x' | 'y';
+}
 
 /**
  * Tipos de prop (objetos de cena com colisor de caixa): como desenhar e quais estados existem.
@@ -13,6 +24,14 @@ export interface PropType {
   solid: string[];
   /** Ações de `prop { action }` → estado de destino. */
   actions: Record<string, string>;
+  /**
+   * Pontos nomeados (mundo), calculados a cada chamada da caixa atual do prop: acompanham a
+   * posição e o tamanho dele. Somam-se (e podem trocar) às âncoras de todo prop: `center`, `top`,
+   * `bottom`, `left` e `right` (meio de cada lado da caixa).
+   */
+  anchors?: Record<string, (prop: Prop) => Vec2>;
+  /** Passagem do prop (`enter`/`exit` e a conferência do `validate`). Sem ela, o prop não se atravessa. */
+  opening?: (prop: Prop) => PropOpening;
   /** Desenha no mundo (antes dos personagens). `k` = progresso da última troca de estado (0..1). */
   draw(r: CanvasRenderer, prop: Prop, view: { appear: number; k: number; from: string | null }): void;
 }
@@ -30,6 +49,35 @@ export function propTypes(): string[] {
   return [...types.keys()];
 }
 
+/** Âncoras de todo prop (meio da caixa e de cada lado). */
+export const BOX_ANCHORS: Record<string, (prop: Prop) => Vec2> = {
+  center: ({ box: b }) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 }),
+  top: ({ box: b }) => ({ x: b.x + b.w / 2, y: b.y }),
+  bottom: ({ box: b }) => ({ x: b.x + b.w / 2, y: b.y + b.h }),
+  left: ({ box: b }) => ({ x: b.x, y: b.y + b.h / 2 }),
+  right: ({ box: b }) => ({ x: b.x + b.w, y: b.y + b.h / 2 }),
+};
+
+/** Nomes das âncoras de um tipo de prop (as de caixa mais as do tipo). */
+export function anchorNames(type: string): string[] {
+  return [...new Set([...Object.keys(BOX_ANCHORS), ...Object.keys(types.get(type)?.anchors ?? {})])];
+}
+
+/** Ponto nomeado do prop, na posição e no tamanho atuais. Nome desconhecido: erro com a lista. */
+export function propAnchor(prop: Prop, name: string): Vec2 {
+  const fn = types.get(prop.type)?.anchors?.[name] ?? BOX_ANCHORS[name];
+  if (!fn) throw new Error(`o prop "${prop.id}" (${prop.type}) não tem a âncora "${name}" (âncoras: ${anchorNames(prop.type).join(', ')})`);
+  return fn(prop);
+}
+
+/** Passagem do prop, ou null se o tipo não tem abertura. */
+export function propOpening(prop: Prop): PropOpening | null {
+  return types.get(prop.type)?.opening?.(prop) ?? null;
+}
+
+/** Distância (px do mundo) da frente da porta (`front`) ao plano da passagem, em alturas da porta. */
+const DOOR_FRONT = 0.9;
+
 /** Caixa do prop em px do buffer (sem giro da câmera: o giro da tremida é pequeno). */
 function screenBox(r: CanvasRenderer, b: Box): { x: number; y: number; w: number; h: number; s: number } {
   const v = r.viewMatrix();
@@ -37,13 +85,20 @@ function screenBox(r: CanvasRenderer, b: Box): { x: number; y: number; w: number
 }
 
 /**
- * Porta: surge (cresce do centro e acende), fica aberta com luz dentro; ao fechar, a folha gira na
- * dobradiça (lado de trás) até cobrir a passagem.
+ * Porta (vista de lado, atravessada na horizontal): surge (cresce do centro e acende), fica aberta
+ * com luz dentro; ao fechar, a folha gira na dobradiça (lado de trás) até cobrir a passagem.
+ * Âncoras: `opening` (meio da passagem), `front` (onde se chega antes de entrar, do lado do
+ * `facing` do prop, padrão -1 = esquerda), `top` e `bottom` (pontas da passagem).
  */
 registerProp('door', {
   states: ['open', 'closed'],
   solid: ['closed'],
   actions: { open: 'open', close: 'closed' },
+  anchors: {
+    opening: ({ box: b }) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 }),
+    front: ({ box: b, facing }) => ({ x: b.x + b.w / 2 + (facing ?? -1) * (b.w / 2 + b.h * DOOR_FRONT), y: b.y + b.h / 2 }),
+  },
+  opening: ({ box }) => ({ box, axis: 'x' }),
   draw(r, prop, { appear, k, from }) {
     const { ctx } = r;
     const g = screenBox(r, prop.box);

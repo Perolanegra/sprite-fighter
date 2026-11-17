@@ -4,7 +4,7 @@
  * roteiro, JSON Schema e docs dos comandos, API fluente, desenho de debug) fica em
  * `sprite-fighter/authoring`.
  */
-export const VERSION = '0.1.1';
+export const VERSION = '0.2.0';
 
 export * from './math.js';
 export { PartGeometry, opaquePoints, type Box } from './geometry.js';
@@ -44,8 +44,9 @@ export { CameraRig, smoothNoise, union, SHAKE_MAX, TRAUMA_DECAY, type AutoOption
 export { drawParallax, type ParallaxLayer } from './parallax.js';
 export { drawProjectiles } from './fight-draw.js';
 export { parseManifest, VARIANT_KINDS, type CharacterManifest, type CharacterInfo, type PoseMeta, type VariantMeta, type VariantKind } from './manifest.js';
-export { registerProp, getPropType, propTypes, drawProps, type PropType } from './props.js';
-export { parseScript, eachStep, COMMANDS, EVENTS, TRANSITIONS } from './script.js';
-export type { Script, ScriptStep, CastSpec, CommandSpec, ParamSpec, ParamKind } from './script.js';
-export { Director, FX_TYPES, type CastMember, type DirectorOptions, type Bubble, type StepEvent } from './director.js';
+export { registerProp, getPropType, propTypes, drawProps, propAnchor, propOpening, anchorNames, BOX_ANCHORS, type PropType, type PropOpening } from './props.js';
+export { passPlan, sideDistance, planePoint, hiddenQuad, spanMiss, fitScale, hoverNear, type PassPlan } from './passage.js';
+export { parseScript, eachStep, isAnchorTarget, COMMANDS, EVENTS, TRANSITIONS } from './script.js';
+export type { Script, ScriptStep, CastSpec, CommandSpec, ParamSpec, ParamKind, AnchorTarget } from './script.js';
+export { Director, FX_TYPES, type CastMember, type DirectorOptions, type Bubble, type StepEvent, type PassCheck } from './director.js';
 export { Scene, type SceneOptions, type DebugDraw } from './scene.js';

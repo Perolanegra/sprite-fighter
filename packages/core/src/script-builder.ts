@@ -36,6 +36,12 @@ export interface ScriptJson {
 }
 
 type Xy = [number, number];
+/** Destino preso a uma âncora de prop. */
+export interface AnchorJson {
+  prop: string;
+  anchor: string;
+  offset?: Xy;
+}
 const clean = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
 
 /** Comandos comuns ao roteiro e ao `parallel`: cada um vira um passo `{ actor, do, params }`. */
@@ -64,8 +70,8 @@ abstract class StepWriter<T extends StepWriter<T>> {
   move(id: string, o: { target?: string } = {}): T {
     return this.do('move', { id, ...o });
   }
-  /** Ponto `[x, y]` ou rota (`"M … C …"`). */
-  moveTo(to: Xy | string, duration: number, o: { ease?: EaseName; scaleTo?: number; relative?: boolean } = {}): T {
+  /** Ponto `[x, y]`, rota (`"M … C …"`) ou âncora de prop (`{ prop, anchor, offset? }`). */
+  moveTo(to: Xy | string | AnchorJson, duration: number, o: { ease?: EaseName; scaleTo?: number; relative?: boolean; align?: 'root' | 'center' } = {}): T {
     return this.do('moveTo', { ...(typeof to === 'string' ? { route: to } : { to }), duration, ...o });
   }
   dash(velocity: Xy, o: { drag?: number; duration?: number } = {}): T {
@@ -90,14 +96,17 @@ abstract class StepWriter<T extends StepWriter<T>> {
   fx(type: string, params: Record<string, unknown> = {}): T {
     return this.do('fx', { type, ...params });
   }
-  spawnProp(type: string, at: Xy, size: Xy, o: { id?: string; state?: string; appear?: number } = {}): T {
+  spawnProp(type: string, at: Xy, size: Xy, o: { id?: string; state?: string; appear?: number; facing?: 1 | -1 } = {}): T {
     return this.do('spawnProp', { type, at, size, ...o });
   }
   prop(id: string, action: string, o: { duration?: number } = {}): T {
     return this.do('prop', { id, action, ...o });
   }
-  enter(prop: string, duration: number, o: { ease?: EaseName } = {}): T {
+  enter(prop: string, duration: number, o: { ease?: EaseName; shrink?: number } = {}): T {
     return this.do('enter', { prop, duration, ...o });
+  }
+  exit(prop: string, duration: number, o: { ease?: EaseName; to?: string; offset?: Xy; scaleTo?: number; shrink?: number } = {}): T {
+    return this.do('exit', { prop, duration, ...o });
   }
   touch(prop: string, gap?: number): T {
     return this.do('touch', { prop, gap });

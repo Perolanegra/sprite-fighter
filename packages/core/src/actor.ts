@@ -123,6 +123,13 @@ export class Actor {
   readonly reach = new Map<string, { bones: [string, string]; target: Vec2; bend: 1 | -1; weight: number }>();
   /** Opacidade (vanish/appear). */
   opacity = 1;
+  /**
+   * Quanto da flutuação (sobe-e-desce, giro e respiração) vale: 1 = toda, 0 = parado. O `enter`
+   * e o `exit` zeram no trecho junto da passagem, para o corpo não errar a abertura.
+   */
+  hoverWeight = 1;
+  /** Sobe-e-desce da flutuação aplicado no último passo (px do mundo). */
+  private hoverY = 0;
   /** Tempo de vida (s), para a flutuação. */
   time = 0;
   readonly squash = new SquashStretch();
@@ -445,9 +452,12 @@ export class Actor {
     const s = this.state.sim;
     const r = s.root;
     const fx = this.facing;
-    const h = this.options.hover ? hover(this.time) : { y: 0, rot: 0 };
+    const hw = this.options.hover ? Math.max(0, Math.min(1, this.hoverWeight)) : 0;
+    const raw = hw > 0 ? hover(this.time) : { y: 0, rot: 0 };
+    const h = { y: raw.y * hw, rot: raw.rot * hw };
+    this.hoverY = h.y;
     // Respiração: um sobe-e-desce bem leve da escala vertical.
-    const breath = this.options.hover ? 1 + 0.012 * Math.sin((2 * Math.PI * this.time) / 3.2) : 1;
+    const breath = 1 + 0.012 * hw * Math.sin((2 * Math.PI * this.time) / 3.2);
     const anchor = this.state.anchor;
     // Pose provisória: variação fixa na raiz (a mesma imagem de outra pose, girada/achatada).
     const v = this.state.image?.provisional;
@@ -557,6 +567,33 @@ export class Actor {
     return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
   }
 
+  /**
+   * Centro visual: o centro da caixa da silhueta da pose (o alfa da imagem, em repouso), menos a
+   * posição (a âncora do quadril), na escala e no lado atuais. Não muda com a flutuação, o tecido
+   * nem o clipe: alinhar por ele (`moveTo { align: "center" }`, `enter`) acerta aberturas
+   * qualquer que seja a pose. No rig de peças (sem imagem), o centro da caixa do corpo.
+   */
+  visualOffset(): Vec2 {
+    const pose = this.state.image;
+    if (!pose) {
+      const b = this.bounds();
+      return b.w || b.h ? { x: b.x + b.w / 2 - this.position.x, y: b.y + b.h / 2 - this.position.y - this.hoverY } : { x: 0, y: 0 };
+    }
+    const c = silhouetteCenter(pose);
+    const v = pose.provisional;
+    const a = this.state.anchor;
+    return {
+      x: this.facing * this.scale * (a.x + (v?.dx ?? 0) + c.x - pose.origin.x),
+      y: this.scale * (a.y + (v?.dy ?? 0) + c.y - pose.origin.y),
+    };
+  }
+
+  /** Centro visual no mundo, com o sobe-e-desce da flutuação do último passo. */
+  visualCenter(): Vec2 {
+    const o = this.visualOffset();
+    return { x: this.position.x + o.x, y: this.position.y + o.y + this.hoverY };
+  }
+
   /** Borrão em andamento (frame atual e total) ou null. */
   get smearing(): { t: number; frames: number } | null {
     return this.smearFx ? { t: this.smearFx.t, frames: this.smearFx.frames } : null;
@@ -634,6 +671,27 @@ export class Actor {
       offset: { x: off.x + sm.dir.x * sm.reach * 0.3 * p, y: off.y + sm.dir.y * sm.reach * 0.3 * p },
     });
   }
+}
+
+const silhouettes = new WeakMap<Uint8ClampedArray, Vec2>();
+
+/** Centro da caixa da silhueta (alfa ≥ 128) de uma pose, em px da imagem (calculado uma vez). */
+function silhouetteCenter(pose: ImagePose): Vec2 {
+  let c = silhouettes.get(pose.alpha);
+  if (c) return c;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const w = pose.width;
+  for (let i = 0; i < pose.alpha.length; i++) {
+    if (pose.alpha[i]! < 128) continue;
+    const x = i % w, y = (i - x) / w;
+    if (x < x0) x0 = x;
+    if (x > x1) x1 = x;
+    if (y < y0) y0 = y;
+    if (y > y1) y1 = y;
+  }
+  c = Number.isFinite(x0) ? { x: (x0 + x1 + 1) / 2, y: (y0 + y1 + 1) / 2 } : { ...pose.origin };
+  silhouettes.set(pose.alpha, c);
+  return c;
 }
 
 /** Estica (preservando a área) ao longo de `angle`, em volta de `at` (mundo). */

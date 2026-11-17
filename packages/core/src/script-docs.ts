@@ -15,8 +15,8 @@ export const COMMAND_DOCS: Record<string, { doc: string; params: Record<string, 
     params: { id: 'id do golpe', target: 'alvo (id do elenco); padrão: o mais perto' },
   },
   moveTo: {
-    doc: 'vai até um ponto ou percorre uma rota (subconjunto de SVG path) em `duration` s',
-    params: { to: 'destino [x, y] (px do mundo)', route: 'rota \"M x y C …\"', relative: '`to` relativo à posição atual', duration: 's', ease: 'easing', scaleTo: 'escala no fim (profundidade)' },
+    doc: 'vai até um ponto ou percorre uma rota (subconjunto de SVG path) em `duration` s; com `to: { prop, anchor }` o destino é uma âncora do prop, lida a cada passo (acompanha o prop)',
+    params: { to: 'destino: [x, y] (px do mundo; só para posições livres no céu) ou { \"prop\": \"<id>\", \"anchor\": \"<âncora>\", \"offset\": [dx, dy] } (âncoras no catálogo, em props.<tipo>.anchors)', route: 'rota \"M x y C …\"', relative: '`to` [x, y] relativo à posição atual', align: '\"root\" (padrão: o quadril vai ao destino) ou \"center\" (o centro visual da silhueta da pose vai ao destino)', duration: 's', ease: 'easing', scaleTo: 'escala no fim (profundidade)' },
   },
   dash: {
     doc: 'impulso com arrasto e rastro; x é para a frente (sentido em que o ator olha)',
@@ -48,15 +48,19 @@ export const COMMAND_DOCS: Record<string, { doc: string; params: Record<string, 
   },
   spawnProp: {
     doc: 'cria um prop (porta, parede); termina quando acaba de surgir',
-    params: { type: 'tipo registrado (registerProp)', id: 'id (padrão: o tipo)', at: 'canto de cima à esquerda [x, y]', size: '[largura, altura]', state: 'estado inicial', appear: 's para surgir' },
+    params: { type: 'tipo registrado (registerProp)', id: 'id (padrão: o tipo)', at: 'canto de cima à esquerda [x, y]', size: '[largura, altura]', state: 'estado inicial', appear: 's para surgir', facing: 'lado da frente: 1 = direita, -1 = esquerda (padrão); é onde fica a âncora front' },
   },
   prop: {
     doc: 'muda um prop: ação do tipo (porta: open/close) ou remove',
     params: { id: 'id do prop', action: 'ação (ou \"remove\")', duration: 's da animação' },
   },
   enter: {
-    doc: 'atravessa um prop (porta): vai até ele e some do outro lado, recortado na passagem',
-    params: { prop: 'id do prop', duration: 's', ease: 'easing' },
+    doc: 'entra num prop com abertura (porta): aproxima o centro visual até a âncora opening, sem flutuar perto da passagem, encolhendo e recortado pela abertura; some do outro lado. A partir de onde o ator estiver (de preferência um moveTo até a âncora front antes)',
+    params: { prop: 'id do prop', duration: 's', ease: 'easing (padrão cubicIn)', shrink: 'escala no fim, em fração da atual (padrão: até 0,7, menos se precisar para caber no vão)' },
+  },
+  exit: {
+    doc: 'sai de um prop com abertura (o contrário do enter): surge pequeno e recortado na passagem e vai até uma âncora (padrão front), crescendo até a escala de antes do enter',
+    params: { prop: 'id do prop', duration: 's', ease: 'easing (padrão cubicOut)', to: 'âncora de destino (padrão front)', offset: 'deslocamento do destino [dx, dy]', scaleTo: 'escala no fim (padrão: a de antes do enter)', shrink: 'escala ao surgir, em fração da final' },
   },
   touch: {
     doc: 'encosta a frente do corpo na face do prop (para o movimento)',
@@ -106,6 +110,19 @@ export function scriptSchema(): Record<string, unknown> {
         return { ...base, type: 'array', items: { type: 'string' } };
       case 'zoom':
         return { ...base, type: ['number', 'null'] };
+      case 'target':
+        return {
+          ...base,
+          oneOf: [
+            { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
+            {
+              type: 'object',
+              properties: { prop: { type: 'string' }, anchor: { type: 'string' }, offset: { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 } },
+              required: ['prop', 'anchor'],
+              additionalProperties: false,
+            },
+          ],
+        };
     }
   };
   const paramsOf = (name: string, spec: CommandSpec) => {
