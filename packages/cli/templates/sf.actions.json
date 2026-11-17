@@ -1,0 +1,7 @@
+[
+  {
+    "name": "teleport_front",
+    "description": "exemplo: some e reaparece na frente do alvo (registre no app com registerAction('teleport_front', …) e apague esta entrada se não usar)",
+    "params": { "distance": "distância do alvo, em px (padrão 120)" }
+  }
+]

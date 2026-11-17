@@ -7,13 +7,13 @@ Transforme esta narrativa numa cena do sprite-fighter:
 
 > $ARGUMENTS
 
-Você escreve a cena; as ferramentas de `tools/narrator` só fazem o trabalho determinístico (catálogo, validação, provisórias, prévia). Nada de API de IA, nada de chave. Não pergunte nada no meio: decida, registre as decisões em `assumptions` e siga.
+Você escreve a cena; o CLI `sf` (pacote `@perolanegra/sprite-fighter-cli`) só faz o trabalho determinístico (catálogo, validação, provisórias, prévia). Nada de API de IA, nada de chave. Não pergunte nada no meio: decida, registre as decisões em `assumptions` e siga.
 
 ## 1. Preparar
 
-1. Garanta o build: `npm run build -w packages/core -w tools/atlas -w tools/narrator` (rápido se nada mudou).
-2. Leia o catálogo: `npm run -s narrate -- catalog` (o `-s` tira o cabeçalho do npm: a saída é só o JSON). É a lista completa do que existe: personagens (`characters.<id>`: `poses` com `description`, `tags` e `variants`, `provisional` com `from`, `moves` com duração e tipo de ataque), `clips`, `fx`, `props` (estados e ações), `actions` (ações TS para o `run` das fases de golpe: as embutidas e as do app, declaradas em `sf.actions.json` na raiz do projeto, com descrição e parâmetros), `commands` (parâmetros de cada comando do roteiro) e `events`.
-3. Leia a cena de exemplo `assets/scenes/chase.json` (formato, escalas, rotas, câmera, porta, reação por evento) e, se precisar de detalhe de um comando, o cabeçalho e a tabela `COMMANDS` de `packages/core/src/script.ts`.
+1. Descubra a pasta de assets: o campo `assets` do `sf.config.json` na raiz do projeto (sem o arquivo, `assets/`). Abaixo, `<assets>` é essa pasta; os comandos `sf` já a usam sozinhos. No monorepo do sprite-fighter, antes rode `npm run build` (rápido se nada mudou).
+2. Leia o catálogo: `npx sf catalog` (a saída é só o JSON). É a lista completa do que existe: personagens (`characters.<id>`: `poses` com `description`, `tags` e `variants`, `provisional` com `from`, `moves` com duração e tipo de ataque), `clips`, `fx`, `props` (estados e ações), `actions` (ações TS para o `run` das fases de golpe: as embutidas e as do app, declaradas em `sf.actions.json` na raiz do projeto, com descrição e parâmetros), `commands` (parâmetros de cada comando do roteiro) e `events`.
+3. Se houver cenas em `<assets>/scenes/`, leia uma como exemplo (formato, escalas, rotas, câmera, porta, reação por evento). O detalhe de cada comando (parâmetros e descrição) está no catálogo, em `commands`; o formato completo do roteiro, no README do sprite-fighter (seção "Roteiro").
 
 ## 2. Mapear a narrativa
 
@@ -31,18 +31,32 @@ Para cada ação da narrativa, decida e anote no `poseMap`:
 
 Escolha um nome curto em kebab-case (sem acentos) a partir da narrativa e escreva:
 
-- `assets/scenes/<nome>.json`: a cena no formato do motor (`title`, `seed`, `cast`, `camera`, `steps`). Use **só ids e nomes do catálogo** (mais as poses novas declaradas em `missing`). Nada de lógica de personagem: tudo é passo do roteiro.
-- `assets/scenes/<nome>.narrative.json`: `{ "narrative": "<a narrativa exata>", "poseMap": [...], "missing": [...], "expectations": [...], "assumptions": [...] }` (formato no cabeçalho de `tools/narrator/src/narrative.ts`).
+- `<assets>/scenes/<nome>.json`: a cena no formato do motor (`title`, `seed`, `cast`, `camera`, `steps`). Use **só ids e nomes do catálogo** (mais as poses novas declaradas em `missing`). Nada de lógica de personagem: tudo é passo do roteiro.
+- `<assets>/scenes/<nome>.narrative.json`, neste formato:
+
+  ```json
+  {
+    "narrative": "<a narrativa exata>",
+    "poseMap": [ { "action": "o neo desvia", "char": "<id>", "pose": "dodge", "match": "provisional", "from": "fly", "reason": "…" } ],
+    "missing": [
+      { "kind": "pose", "char": "<id>", "name": "kick_spin", "description": "…", "tags": ["chute"], "closest": "kick", "why": "…" },
+      { "kind": "variant", "char": "<id>", "pose": "fly", "name": "angry", "variantKind": "expression", "description": "…", "tags": [], "why": "…" },
+      { "kind": "move", "char": "<id>", "name": "spin_kick", "why": "…", "phases": [ { "name": "giro", "frames": 8, "pose": "kick_spin" } ] }
+    ],
+    "expectations": [ { "event": "hit:<a>-><b>", "why": "a narrativa diz que acerta" } ],
+    "assumptions": [ "posições e tempos escolhidos" ]
+  }
+  ```
 
 Regras de composição: personagens com escala ≈ 0,3 numa cena aberta; ninguém visível longe demais dos outros (a câmera automática enquadra os visíveis); toda cena termina (movimentos com duração).
 
 ## 4. Validar, criar o que falta e corrigir
 
-1. `npm run narrate -- validate scenes/<nome>.json`
+1. `npx sf validate scenes/<nome>.json`
    - Se acusar pose que "ainda não existe" e que está declarada em `missing`, rode o passo 2 e valide de novo.
    - Corrija **todos** os erros na cena (ou no arquivo lateral) e valide de novo, até dar `OK`. Leia os avisos: variante que não existe na pose atual, provisória em uso, ação de golpe que não é embutida nem declarada (sem `sf.actions.json` ela é só aviso, e a simulação seca não a executa).
-2. `npm run narrate -- missing scenes/<nome>.json`: grava as provisórias declaradas no manifesto e gera `assets/scenes/<nome>.missing.md` (prompts de imagem montados do manifesto + comandos `pose:add`). Rode sempre, mesmo sem nada declarado: ele lista também as provisórias que a cena já usava.
-3. `npm run narrate -- preview scenes/<nome>.json`: screenshots nos tempos-chave e a folha `apps/demo/shots/out/preview/<nome>/contato.png`.
+2. `npx sf missing scenes/<nome>.json`: grava as provisórias declaradas no manifesto e gera `<assets>/scenes/<nome>.missing.md` (prompts de imagem montados do manifesto + comandos `pose:add`). Rode sempre, mesmo sem nada declarado: ele lista também as provisórias que a cena já usava.
+3. `npx sf preview scenes/<nome>.json`: screenshots nos tempos-chave e a folha `.sf/preview/<nome>/contato.png` (precisa do Playwright: `npm i -D playwright && npx playwright install chromium`).
 
 ## 5. Conferir as imagens
 
@@ -59,7 +73,7 @@ Corrigiu algo? Volte ao passo 4.1. Pare quando validate estiver `OK` e as imagen
 
 Responda com:
 
-- os caminhos da cena, do arquivo lateral e da folha de contato, e a URL para ver ao vivo: `npm run dev` → `?scene=script&file=scenes/<nome>.json` (com `&debug=1` para ver poses e PROVISÓRIA);
+- os caminhos da cena, do arquivo lateral e da folha de contato, e a URL para ver ao vivo: `npx sf lab` → `http://localhost:5180/?scene=script&file=scenes/<nome>.json` (com `&debug=1` para ver poses e PROVISÓRIA);
 - a folha de contato (mostre o caminho absoluto do `contato.png`);
 - o `poseMap` em tabela curta (ação → personagem/pose → exact/similar/provisional ← from/missing);
 - **a lista do que falta**: poses (novas e provisórias que a cena usa), variantes e golpes, cada uma com o comando `pose:add` do `.missing.md`, e o caminho do `.missing.md` com os prompts de imagem;
