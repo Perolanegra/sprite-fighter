@@ -1,0 +1,48 @@
+# Publica os 3 pacotes no GitHub Packages quando uma tag v* é criada (ex.: git tag v0.1.0 && git push origin v0.1.0).
+# A tag precisa ser igual à versão dos package.json (o job confere antes de publicar).
+name: publicar pacotes
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: '@perolanegra'
+
+      # npm 11: o 10.x falha ("edgesOut") com os peers opcionais do Vitest no @angular/build 21.
+      - run: npm install -g npm@11
+
+      - run: npm ci
+
+      - name: versão da tag = versão dos pacotes
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for p in packages/core packages/angular packages/cli; do
+            v=$(node -p "require('./$p/package.json').version")
+            if [ "$v" != "$tag" ]; then echo "::error::$p está em $v, a tag é v$tag"; exit 1; fi
+          done
+
+      - run: npm run build
+
+      - run: npm test
+
+      - name: publicar
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm publish ./packages/core
+          npm publish ./packages/angular/dist
+          npm publish ./packages/cli
