@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "char": "smith",
+  "tilt": -18,
+  "bones": [
+    {"name": "torso", "part": "torso", "parent": null, "pivot": {"bbox": [0.45, 0.8]}, "rotate": 76, "position": [0, 0]},
+    {"name": "jacket_tail_3", "part": "jacket_tail_3", "parent": "torso", "layer": "back", "order": -3, "pivot": "left", "attach": {"bbox": [0.3, 0.9]}, "angle": 174, "scale": 0.8},
+    {"name": "jacket_tail_2", "part": "jacket_tail_2", "parent": "torso", "layer": "back", "order": -2, "pivot": "left", "attach": {"bbox": [0.35, 0.92]}, "angle": 168, "scale": 0.8},
+    {"name": "thigh_back", "part": "thigh_1", "parent": "torso", "layer": "back", "order": -1, "pivot": "left", "inset": 0.1, "stretch": 1.25, "attach": {"bbox": [0.45, 0.88]}, "angle": 176},
+    {"name": "shin_back", "part": "shin_2", "parent": "thigh_back", "layer": "front", "pivot": "top", "inset": 0.1, "attach": "end", "angle": 182},
+    {"name": "shoe_back", "part": "shoe_2", "parent": "shin_back", "layer": "back", "pivot": {"bbox": [0.3, 0.2]}, "attach": "end", "rotate": 150},
+    {"name": "arm_back_upper", "part": "upper_arm_2", "parent": "torso", "layer": "back", "order": 0, "pivot": "left", "inset": 0.12, "attach": {"bbox": [0.4, 0.22]}, "angle": 190, "stretch": 1.45},
+    {"name": "arm_back_fore", "part": "forearm_reach", "parent": "arm_back_upper", "layer": "back", "slots": ["forearm_open", "forearm_gun", "forearm_bare_2"], "pivot": "left", "attach": "end", "angle": 186, "stretch": 1.2},
+    {"name": "thigh_front", "part": "thigh_2", "parent": "torso", "layer": "back", "order": 1, "pivot": "top", "inset": 0.1, "attach": {"bbox": [0.55, 0.9]}, "angle": 170},
+    {"name": "shin_front", "part": "shin_1", "parent": "thigh_front", "layer": "front", "pivot": "top", "inset": 0.1, "attach": "end", "angle": 176},
+    {"name": "shoe_front", "part": "shoe_1", "parent": "shin_front", "layer": "back", "pivot": {"bbox": [0.3, 0.2]}, "attach": "end", "rotate": 145},
+    {"name": "jacket_tail_1", "part": "jacket_tail_1", "parent": "torso", "layer": "back", "order": 3, "pivot": "left", "attach": {"bbox": [0.45, 0.94]}, "angle": 164, "scale": 0.8},
+    {"name": "head", "part": "head_neutral", "parent": "torso", "layer": "back", "order": 4, "slots": ["head_stern", "head_grit", "head_shout", "head_grin", "head_front", "head_back", "head_backside"], "pivot": {"bbox": [0.5, 0.9]}, "attach": {"bbox": [0.6, 0.05]}, "rotate": 12},
+    {"name": "eyes", "part": "eyes_neutral", "parent": "head", "hidden": true, "slots": ["eyes_angry"], "pivot": {"bbox": [0.5, 0.5]}, "attach": {"bbox": [0.78, 0.4]}, "rotate": 12},
+    {"name": "mouth", "part": "mouth_neutral", "parent": "head", "hidden": true, "slots": ["mouth_grit", "mouth_shout"], "pivot": {"bbox": [0.5, 0.5]}, "attach": {"bbox": [0.85, 0.72]}, "rotate": 12},
+    {"name": "tie_knot", "part": "tie_knot", "parent": "torso", "layer": "front", "order": 11, "pivot": "top", "attach": {"bbox": [0.8, 0.08]}, "angle": 120},
+    {"name": "tie_mid", "part": "tie_mid", "parent": "tie_knot", "layer": "back", "pivot": "right", "attach": "end", "angle": 248, "scale": 1.25},
+    {"name": "tie_tail", "part": "tie_tail", "parent": "tie_mid", "layer": "back", "pivot": "right", "attach": "end", "angle": 228, "scale": 1.4},
+    {"name": "arm_front_upper", "part": "upper_arm_1", "parent": "torso", "layer": "front", "order": 10, "pivot": "top", "inset": 0.12, "attach": {"bbox": [0.45, 0.25]}, "angle": 192, "stretch": 1.45},
+    {"name": "arm_front_fore", "part": "forearm_open", "parent": "arm_front_upper", "layer": "front", "slots": ["forearm_reach", "forearm_gun", "forearm_bare_1"], "pivot": "left", "attach": "end", "angle": 186, "stretch": 1.2}
+  ],
+  "caps": [
+    {"name": "shoulder_front", "part": "joint_cap_1", "bone": "arm_front_upper", "scale": 0.8}
+  ],
+  "chains": [
+    {"name": "jacket_tail_1", "bones": ["jacket_tail_1"], "stiffness": 0.35, "damping": 0.25},
+    {"name": "jacket_tail_2", "bones": ["jacket_tail_2"], "stiffness": 0.3, "damping": 0.22},
+    {"name": "jacket_tail_3", "bones": ["jacket_tail_3"], "stiffness": 0.25, "damping": 0.2},
+    {"name": "tie", "bones": ["tie_mid", "tie_tail"], "stiffness": 0.2, "damping": 0.16}
+  ]
+}

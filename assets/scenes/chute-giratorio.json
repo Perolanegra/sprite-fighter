@@ -1,0 +1,15 @@
+{
+  "title": "o neo dá um chute giratório",
+  "seed": 1,
+  "tail": 0.5,
+  "cast": {
+    "neo": { "at": [0, 600], "scale": 0.45, "clip": "idle_fly" }
+  },
+  "camera": { "mode": "auto", "maxZoom": 0.75, "margin": 160 },
+  "steps": [
+    { "id": "gira", "at": 0.5, "actor": "neo", "do": "pose", "params": { "name": "kick_spin" } },
+    { "at": 0.5, "actor": "neo", "do": "fx", "params": { "type": "afterimage", "frames": 14, "every": 2, "life": 12, "alpha": 0.5 } },
+    { "at": 0.5, "actor": "neo", "do": "fx", "params": { "type": "speedlines", "frames": 24, "intensity": 0.7, "focus": true } },
+    { "after": "gira", "delay": 0.7, "actor": "neo", "do": "pose", "params": { "name": "fly" } }
+  ]
+}

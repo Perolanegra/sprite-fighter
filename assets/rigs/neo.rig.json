@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "char": "neo",
+  "tilt": -16,
+  "bones": [
+    {"name": "torso", "part": "torso", "parent": null, "slots": ["shirt_torso"], "pivot": {"bbox": [0.45, 0.78]}, "rotate": 86, "position": [0, 0], "stretch": 1.3},
+    {"name": "coat_tail_3", "part": "coat_tail_3", "parent": "torso", "layer": "back", "order": -3, "pivot": "left", "attach": {"bbox": [0.2, 0.9]}, "angle": 200},
+    {"name": "coat_tail_2", "part": "coat_tail_2", "parent": "torso", "layer": "back", "order": -2, "pivot": "left", "attach": {"bbox": [0.3, 0.92]}, "angle": 192},
+    {"name": "thigh_back", "part": "thigh_2", "parent": "torso", "layer": "back", "order": -1, "pivot": "top", "inset": 0.1, "attach": {"bbox": [0.5, 0.9]}, "angle": 178, "stretch": 1.35},
+    {"name": "shin_back", "part": "shin_2", "parent": "thigh_back", "layer": "front", "pivot": "top", "inset": 0.1, "attach": "end", "angle": 182, "stretch": 1.3},
+    {"name": "shoe_back", "part": "shoe_2", "parent": "shin_back", "layer": "back", "pivot": {"bbox": [0.3, 0.2]}, "attach": "end", "rotate": 150},
+    {"name": "arm_back_upper", "part": "upper_arm_2", "parent": "torso", "layer": "front", "order": 9, "pivot": "top", "inset": 0.12, "attach": {"bbox": [0.4, 0.27]}, "angle": 198, "stretch": 1.3},
+    {"name": "arm_back_fore", "part": "forearm_bare_2", "parent": "arm_back_upper", "layer": "front", "pivot": "top", "inset": 0.12, "attach": "end", "angle": 192, "stretch": 1.25},
+    {"name": "hand_back", "part": "hand_relaxed_2", "parent": "arm_back_fore", "layer": "front", "slots": ["hand_fist_2"], "pivot": "left", "attach": "end", "angle": 140},
+    {"name": "thigh_front", "part": "thigh_1", "parent": "torso", "layer": "back", "order": 1, "pivot": "top", "inset": 0.1, "attach": {"bbox": [0.55, 0.92]}, "angle": 174, "stretch": 1.35},
+    {"name": "shin_front", "part": "shin_1", "parent": "thigh_front", "layer": "front", "pivot": "top", "inset": 0.1, "attach": "end", "angle": 178, "stretch": 1.3},
+    {"name": "shoe_front", "part": "shoe_1", "parent": "shin_front", "layer": "back", "pivot": {"bbox": [0.3, 0.2]}, "attach": "end", "rotate": 145},
+    {"name": "coat_skirt", "part": "coat_skirt", "parent": "torso", "layer": "back", "order": 2, "pivot": {"bbox": [0.5, 0.04]}, "attach": {"bbox": [0.45, 0.9]}, "rotate": 98},
+    {"name": "coat_tail_1", "part": "coat_tail_1", "parent": "torso", "layer": "back", "order": 3, "pivot": "left", "attach": {"bbox": [0.45, 0.95]}, "angle": 184},
+    {"name": "head", "part": "head_serious", "parent": "torso", "layer": "back", "order": 4, "slots": ["head_worried", "head_lookup", "head_shout"], "pivot": {"bbox": [0.47, 0.88]}, "attach": {"bbox": [0.5, 0.0]}, "rotate": 4},
+    {"name": "eyes", "part": "eyes_open", "parent": "head", "hidden": true, "slots": ["eyes_squint", "eyes_closed"], "pivot": {"bbox": [0.5, 0.5]}, "attach": {"bbox": [0.8, 0.42]}, "rotate": 12},
+    {"name": "mouth", "part": "mouth_neutral", "parent": "head", "hidden": true, "slots": ["mouth_grit", "mouth_shout"], "pivot": {"bbox": [0.5, 0.5]}, "attach": {"bbox": [0.82, 0.72]}, "rotate": 12},
+    {"name": "arm_front_upper", "part": "upper_arm_1", "parent": "torso", "layer": "front", "order": 10, "pivot": "top", "inset": 0.12, "attach": {"bbox": [0.6, 0.32]}, "angle": 4, "stretch": 1.3},
+    {"name": "arm_front_fore", "part": "forearm_reach_1", "parent": "arm_front_upper", "layer": "front", "slots": ["forearm_reach_2"], "pivot": "left", "attach": "end", "angle": -4, "stretch": 1.12}
+  ],
+  "caps": [],
+  "chains": [
+    {"name": "coat_tail_1", "bones": ["coat_tail_1"], "stiffness": 0.3, "damping": 0.22},
+    {"name": "coat_tail_2", "bones": ["coat_tail_2"], "stiffness": 0.25, "damping": 0.2},
+    {"name": "coat_tail_3", "bones": ["coat_tail_3"], "stiffness": 0.2, "damping": 0.18},
+    {"name": "coat_skirt", "bones": ["coat_skirt"], "stiffness": 0.6, "damping": 0.35}
+  ]
+}

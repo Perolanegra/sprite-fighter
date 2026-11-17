@@ -1,0 +1,17 @@
+{
+  "title": "variantes: hand/expression trocam só a textura da pose",
+  "seed": 1,
+  "duration": 3.2,
+  "cast": {
+    "smith": { "at": [0, 0], "scale": 0.5, "pose": "shoot", "clip": "idle_fly" }
+  },
+  "camera": { "mode": "auto", "maxZoom": 0.9, "margin": 160, "snap": true },
+  "steps": [
+    { "at": 0.6, "actor": "smith", "do": "hand", "params": { "name": "nogun" } },
+    { "at": 1.0, "actor": "smith", "do": "expression", "params": { "name": "angry" } },
+    { "at": 1.4, "actor": "smith", "do": "pose", "params": { "name": "fly", "transition": "cut" } },
+    { "at": 1.8, "actor": "smith", "do": "hand", "params": { "name": "nogun" } },
+    { "at": 2.2, "actor": "smith", "do": "pose", "params": { "name": "shoot", "transition": "cut" } },
+    { "at": 2.6, "actor": "smith", "do": "hand", "params": { "name": "none" } }
+  ]
+}

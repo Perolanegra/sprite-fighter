@@ -1,0 +1,69 @@
+{
+  "narrative": "o agente persegue o neo pelos telhados, atira duas vezes, o neo desvia e some numa porta; o agente bate de cara e cai",
+  "poseMap": [
+    {
+      "action": "o agente persegue o neo",
+      "char": "smith",
+      "pose": "fly",
+      "match": "exact",
+      "reason": "fly: voando de bruços; tags perseguição"
+    },
+    {
+      "action": "o neo (fugindo)",
+      "char": "neo",
+      "pose": "fly",
+      "match": "exact",
+      "reason": "fly: tags fuga, perseguição"
+    },
+    {
+      "action": "atira duas vezes",
+      "char": "smith",
+      "pose": "shoot",
+      "match": "exact",
+      "reason": "golpe shoot (pose shoot: atirando com a pistola), duas vezes"
+    },
+    {
+      "action": "o neo desvia",
+      "char": "neo",
+      "pose": "dodge",
+      "match": "provisional",
+      "from": "fly",
+      "reason": "golpe dodge (pose dodge: desvia de um tiro); ainda é provisória: imagem de fly com variação na raiz"
+    },
+    {
+      "action": "some numa porta",
+      "char": "neo",
+      "pose": "enter",
+      "match": "exact",
+      "reason": "enter: mergulhando como quem atravessa uma porta; tags porta"
+    },
+    {
+      "action": "o agente bate de cara",
+      "char": "smith",
+      "pose": "splat",
+      "match": "exact",
+      "reason": "splat: esborrachado contra uma superfície; tags porta, bater de cara"
+    },
+    {
+      "action": "e cai",
+      "char": "smith",
+      "pose": "fall",
+      "match": "exact",
+      "reason": "fall: caindo, desacordado"
+    }
+  ],
+  "missing": [],
+  "expectations": [
+    {
+      "event": "hit:door->smith",
+      "why": "o agente bate de cara na porta"
+    }
+  ],
+  "assumptions": [
+    "\"pelos telhados\": voo baixo sobre a cidade (y ≈ 600–700), com o cenário de prédios da demo",
+    "o neo desvia de cada tiro quando a bala chega perto (on: incoming), jogando o corpo para cima",
+    "a porta surge à frente da fuga (x = 1860) e fecha logo depois que o neo entra",
+    "depois da batida, o agente recua um pouco antes de cair (a cabeça não cruza a porta)",
+    "a cena termina pouco depois do começo da queda (tail 0,55 s): o cenário não tem chão abaixo dos prédios"
+  ]
+}

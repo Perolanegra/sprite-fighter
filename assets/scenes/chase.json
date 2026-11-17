@@ -1,0 +1,43 @@
+{
+  "title": "perseguição: fly → shoot (o neo desvia) → porta → splat → fall",
+  "seed": 3,
+  "tail": 1.2,
+  "cast": {
+    "smith": { "at": [-560, 690], "scale": 0.32, "clip": "idle_fly" },
+    "neo": { "at": [-100, 640], "scale": 0.32, "clip": "idle_fly" }
+  },
+  "camera": { "mode": "auto", "maxZoom": 0.6, "minZoom": 0.3, "margin": 110 },
+  "steps": [
+    { "id": "fuga", "at": 0, "actor": "neo", "do": "moveTo", "params": { "route": "M -100 640 C 400 470 900 700 1480 560", "duration": 2.2, "ease": "sineInOut" } },
+    { "at": 0, "do": "fx", "params": { "type": "speedlines", "frames": 144, "intensity": 0.4 } },
+    { "at": 0.05, "actor": "smith", "do": "moveTo", "params": { "route": "M -560 690 C -100 560 600 720 1280 600", "duration": 2.6, "ease": "sineInOut" } },
+
+    { "id": "tiro1", "at": 0.8, "actor": "smith", "do": "move", "params": { "id": "shoot", "target": "neo" } },
+    { "id": "tiro2", "at": 1.5, "actor": "smith", "do": "move", "params": { "id": "shoot", "target": "neo" } },
+    { "on": "incoming:smith->neo", "nth": 1, "actor": "neo", "do": "move", "params": { "id": "dodge" } },
+    { "on": "incoming:smith->neo", "nth": 2, "actor": "neo", "do": "move", "params": { "id": "dodge" } },
+
+    { "id": "porta", "at": 1.7, "do": "spawnProp", "params": { "type": "door", "id": "door", "at": [1840, 300], "size": [56, 440], "appear": 0.25 } },
+    { "at": 1.7, "do": "camera", "params": { "targets": ["neo", "smith", "door"] } },
+
+    { "at": 2.12, "actor": "neo", "do": "pose", "params": { "name": "enter" } },
+    { "id": "entra", "at": 2.2, "actor": "neo", "do": "enter", "params": { "prop": "door", "duration": 0.5, "ease": "cubicIn" } },
+    { "at": 2.65, "actor": "smith", "do": "moveTo", "params": { "to": [2150, 680], "duration": 0.7, "ease": "power2In" } },
+    { "id": "fecha", "after": "entra", "delay": 0.06, "do": "prop", "params": { "id": "door", "action": "close", "duration": 0.1 } },
+
+    { "id": "splat", "on": "hit:door->smith", "actor": "smith", "do": "parallel", "params": { "steps": [
+      { "do": "hover" },
+      { "do": "pose", "params": { "name": "splat", "transition": "cut" } },
+      { "do": "touch", "params": { "prop": "door", "gap": 6 } },
+      { "do": "play", "params": { "clip": "splat", "fade": 0 } },
+      { "do": "fx", "params": { "type": "impact_big", "dir": [-1, 0] } },
+      { "do": "fx", "params": { "type": "hitstop", "frames": 9 } }
+    ] } },
+    { "id": "recuo", "after": "splat", "delay": 0.4, "actor": "smith", "do": "moveTo", "params": { "to": [-40, 0], "relative": true, "duration": 0.18, "ease": "backOut" } },
+    { "after": "recuo", "actor": "smith", "do": "parallel", "params": { "steps": [
+      { "do": "pose", "params": { "name": "fall" } },
+      { "do": "play", "params": { "clip": "fall", "fade": 8 } },
+      { "do": "fall", "params": { "vx": -90, "vy": -120 } }
+    ] } }
+  ]
+}

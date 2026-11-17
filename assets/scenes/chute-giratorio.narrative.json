@@ -1,0 +1,36 @@
+{
+  "narrative": "o neo dá um chute giratório",
+  "poseMap": [
+    {
+      "action": "o neo dá um chute giratório",
+      "char": "neo",
+      "pose": "kick_spin",
+      "match": "provisional",
+      "reason": "não há chute giratório; kick (chute alto com a perna esticada para a frente) é o mais parecido, mas não gira",
+      "from": "kick"
+    }
+  ],
+  "missing": [
+    {
+      "kind": "pose",
+      "char": "neo",
+      "name": "kick_spin",
+      "description": "chute giratório no ar, corpo girando de lado com a perna da frente estendida num arco e o sobretudo rodando junto",
+      "tags": [
+        "chute",
+        "giro",
+        "giratório",
+        "ataque",
+        "corpo a corpo"
+      ],
+      "closest": "kick",
+      "why": "kick é um chute reto para a frente, sem o giro do corpo"
+    }
+  ],
+  "expectations": [],
+  "assumptions": [
+    "o chute é no ar e sem alvo: a narrativa não diz em quem acerta, então a cena tem só o neo",
+    "o giro é sugerido pelo rastro (afterimage) e pelas linhas de velocidade enquanto a pose kick_spin não tem imagem",
+    "o neo volta ao voo (fly) 0,7 s depois do chute"
+  ]
+}
