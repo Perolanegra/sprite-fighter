@@ -1,4 +1,4 @@
 {
   "files": [],
-  "references": [{ "path": "packages/core" }, { "path": "tools/atlas" }, { "path": "tools/narrator" }, { "path": "apps/demo" }]
+  "references": [{ "path": "packages/core" }, { "path": "packages/cli" }, { "path": "apps/demo" }]
 }

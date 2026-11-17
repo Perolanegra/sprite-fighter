@@ -2,8 +2,9 @@ node_modules/
 dist/
 *.tsbuildinfo
 apps/demo/shots/out/
-tools/atlas/out/
+.sf/
 dist-types/
 
 .angular/
 apps/ng-example/shots/out/
+dist/packs/
