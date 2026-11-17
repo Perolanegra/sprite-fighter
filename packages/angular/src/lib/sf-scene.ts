@@ -17,7 +17,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Scene, type CanvasRenderer, type ClipData, type DebugDraw, type HitEvent, type ParallaxLayer, type StepEvent } from 'sprite-fighter';
+import { Scene, type CanvasRenderer, type ClipData, type DebugDraw, type HitEvent, type ParallaxLayer, type StepEvent } from '@perolanegra/sprite-fighter';
 import { SfAssets, type SfCharacters } from './sf-assets';
 
 export interface SfReadyEvent {
@@ -44,7 +44,7 @@ const VISIBLE_RATIO = 0.5;
  */
 let debugDraw: Promise<DebugDraw> | null = null;
 /** `drawFightDebug` de `sprite-fighter/authoring`, por import dinâmico (fora do bundle principal). */
-const loadDebugDraw = () => (debugDraw ??= import('sprite-fighter/authoring').then((m) => m.drawFightDebug));
+const loadDebugDraw = () => (debugDraw ??= import('@perolanegra/sprite-fighter/authoring').then((m) => m.drawFightDebug));
 
 @Component({
   selector: 'sf-scene',

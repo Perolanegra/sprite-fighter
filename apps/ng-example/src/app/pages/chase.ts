@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, inject, signal, viewChild } from '@angular/core';
-import { SfSceneComponent, type SfReadyEvent } from 'ngx-sprite-fighter';
-import type { HitEvent, StepEvent } from 'sprite-fighter';
+import { SfSceneComponent, type SfReadyEvent } from '@perolanegra/ngx-sprite-fighter';
+import type { HitEvent, StepEvent } from '@perolanegra/sprite-fighter';
 import { cityLayers, drawSky } from '../backdrop';
 import { CAST } from '../cast';
 

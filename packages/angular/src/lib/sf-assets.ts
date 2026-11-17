@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Character, parseClip, parseMoves, type CastMember, type ClipData, type MoveData } from 'sprite-fighter';
+import { Character, parseClip, parseMoves, type CastMember, type ClipData, type MoveData } from '@perolanegra/sprite-fighter';
 
 /**
  * Um personagem por URL. O modo principal é só com poses-imagem:

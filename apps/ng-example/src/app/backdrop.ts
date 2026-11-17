@@ -1,5 +1,5 @@
 // Cópia do cenário da demo (apps/demo/src/backdrop.ts): cidade em paralaxe e céu, sem imagens externas.
-import { createRng, type CanvasRenderer, type ParallaxLayer } from 'sprite-fighter';
+import { createRng, type CanvasRenderer, type ParallaxLayer } from '@perolanegra/sprite-fighter';
 
 /**
  * Cenário da demo em camadas (paralaxe): nuvens, cidade ao longe, cidade no meio e prédios

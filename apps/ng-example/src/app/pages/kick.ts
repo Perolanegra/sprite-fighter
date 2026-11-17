@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { SfSceneComponent } from 'ngx-sprite-fighter';
+import { SfSceneComponent } from '@perolanegra/ngx-sprite-fighter';
 import { drawSky } from '../backdrop';
 import { CAST } from '../cast';
 

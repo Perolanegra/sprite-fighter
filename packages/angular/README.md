@@ -1,6 +1,15 @@
-# ngx-sprite-fighter
+# @perolanegra/ngx-sprite-fighter
 
-Componente Angular `<sf-scene>` (standalone) que toca as cenas roteirizadas do `sprite-fighter`.
+Componente Angular `<sf-scene>` (standalone) que toca as cenas roteirizadas do `@perolanegra/sprite-fighter`.
+
+Angular 21 (`@angular/core` e `@angular/common` `^21`). Instalação e `.npmrc` do GitHub Packages: README do
+repositório (https://github.com/Perolanegra/sprite-fighter#readme).
+
+```bash
+npm i @perolanegra/sprite-fighter @perolanegra/ngx-sprite-fighter
+```
+
+No monorepo:
 
 ```bash
 npm run build:ng      # ng build ngx-sprite-fighter (pacote em packages/angular/dist) + app de exemplo
@@ -11,7 +20,7 @@ npm run ng:check      # com o app rodando: screenshots e conferência de vazamen
 ## Uso
 
 ```ts
-import { SfSceneComponent, type SfCharacters } from 'ngx-sprite-fighter';
+import { SfSceneComponent, type SfCharacters } from '@perolanegra/ngx-sprite-fighter';
 
 // Só poses-imagem (o id é o nome do manifesto); `atlas` + `rig` acrescentam o rig de peças.
 const cast: SfCharacters = {
@@ -29,7 +38,7 @@ const cast: SfCharacters = {
 | `characters` | obrigatório | por id: `{ poses, moves?, atlas?, rig? }` (URLs) ou `{ character, moves }` já carregado |
 | `script` | obrigatório | URL do roteiro, o JSON ou `script(...).toJSON()` |
 | `clips` | `null` | URL do `index.json` dos clipes ou o mapa já carregado |
-| `autoplay`, `loop`, `debug` | `false` | `loop`, `debug` e `timeScale` mudam ao vivo; o desenho de debug (`sprite-fighter/authoring`) só é baixado quando `debug` liga |
+| `autoplay`, `loop`, `debug` | `false` | `loop`, `debug` e `timeScale` mudam ao vivo; o desenho de debug (`@perolanegra/sprite-fighter/authoring`) só é baixado quando `debug` liga |
 | `timeScale` | `1` | câmera lenta < 1 |
 | `webgl` | `true` | `false` força o Canvas 2D (sem contexto WebGL) |
 | `playOnVisible` | `false` | toca quando metade da cena entra na tela e pausa quando sai; se já terminou, recomeça |

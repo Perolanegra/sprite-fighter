@@ -4,7 +4,7 @@
     "outDir": "../../out-tsc/app",
     "declaration": false,
     "types": [],
-    "paths": { "ngx-sprite-fighter": ["../../packages/angular/dist"] }
+    "paths": { "@perolanegra/ngx-sprite-fighter": ["../../packages/angular/dist"] }
   },
   "angularCompilerOptions": { "strictTemplates": true, "strictInjectionParameters": true },
   "files": ["src/main.ts"],

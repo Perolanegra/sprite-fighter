@@ -1,4 +1,4 @@
-import type { SfCharacters } from 'ngx-sprite-fighter';
+import type { SfCharacters } from '@perolanegra/ngx-sprite-fighter';
 
 /** Os dois personagens só por poses-imagem (sem atlas nem rig de peças), com os golpes. */
 export const CAST: SfCharacters = {
