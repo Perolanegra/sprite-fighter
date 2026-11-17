@@ -74,9 +74,9 @@ o npm 11 (`npx npm@11 install` ou `npm i -g npm@11`), ou fixe a família do Vite
 ```bash
 npm run pack:all                      # compila e gera dist/packs/*.tgz (os 3 pacotes)
 cd <seu-app>
-npm i <repo>/dist/packs/perolanegra-sprite-fighter-0.1.0.tgz \
-      <repo>/dist/packs/perolanegra-ngx-sprite-fighter-0.1.0.tgz \
-      <repo>/dist/packs/perolanegra-sprite-fighter-cli-0.1.0.tgz
+npm i <repo>/dist/packs/perolanegra-sprite-fighter-0.2.0.tgz \
+      <repo>/dist/packs/perolanegra-ngx-sprite-fighter-0.2.0.tgz \
+      <repo>/dist/packs/perolanegra-sprite-fighter-cli-0.2.0.tgz
 npx sf init --assets public/sf
 ```
 
@@ -267,7 +267,8 @@ completa da perseguição está em `apps/demo/src/chase-api.ts`.
 - `Character.load({ poses })` / `{ atlas, rig, poses }`; `character.loadPose(nome)`, `setPose(nome, { transition })`,
   `loadVariant(pose, variante)`; `Character.fromPoses(manifesto, carregadores)` (Node, sem navegador).
 - `registerAction(nome, fn)`: ação TS chamada pelo `run` de uma fase de golpe (ver [novo golpe](#guia-novo-golpe)).
-- `registerProp(tipo, { states, solid, actions, draw })`: tipo de prop novo (os embutidos são `door` e `wall`).
+- `registerProp(tipo, { states, solid, actions, draw, anchors?, opening? })`: tipo de prop novo (os embutidos são
+  `door` e `wall`); `propAnchor(prop, nome)` e `propOpening(prop)` leem as âncoras e a passagem.
 - `parseManifest`, `parseSkin`, `parseMoves`, `parseClip`, `parseScript`, `COMMANDS` (tipos dos parâmetros).
 - `World`, `Actor`, `CanvasRenderer`, `CameraRig`, `Effects`: as camadas de baixo, se precisar montar algo fora do `Scene`.
 
@@ -431,7 +432,7 @@ ponto do evento.
 |---|---|---|---|
 | `pose` | sim | `name`\*, `transition` (`smear`, `afterimage`, `flash`, `cut`), `skin` (`image`/`parts`) | troca a pose-chave |
 | `move` | sim | `id`\*, `target` | executa um golpe; termina com ele |
-| `moveTo` | sim | `to` [x, y] **ou** `route` ("M x y C …"), `duration`\*, `ease`, `relative`, `scaleTo` | vai até um ponto ou percorre uma rota; `scaleTo` dá profundidade |
+| `moveTo` | sim | `to` [x, y] ou `{ prop, anchor, offset }` **ou** `route` ("M x y C …"), `duration`\*, `ease`, `relative`, `align` (`root`/`center`), `scaleTo` | vai até um ponto, uma âncora de prop (lida a cada passo) ou percorre uma rota; `scaleTo` dá profundidade |
 | `dash` | sim | `velocity`\* [frente, y], `drag`, `duration` | impulso com arrasto e rastro |
 | `hover` | sim | | flutua parado |
 | `fall` | sim | `vx`, `vy`, `gravity` | cai com gravidade (não termina) |
@@ -441,16 +442,42 @@ ponto do evento.
 | `hand` | sim | `name`\* (variante ou `"none"`) | variante de mão, idem |
 | `opacity` | sim | `value`\* 0..1 | some/aparece |
 | `say` | sim | `text`\*, `seconds` (1,5) | balão de fala |
-| `enter` | sim | `prop`\*, `duration`\*, `ease` | atravessa o prop (porta), recortado na passagem |
+| `enter` | sim | `prop`\*, `duration`\*, `ease` (`cubicIn`), `shrink` | entra num prop com abertura: o centro visual vai até `opening`, sem flutuar perto da passagem, encolhendo e recortado; some do outro lado |
+| `exit` | sim | `prop`\*, `duration`\*, `ease` (`cubicOut`), `to` (âncora, `front`), `offset`, `scaleTo`, `shrink` | o contrário: surge pequeno e recortado na passagem e vai até a âncora, crescendo até a escala de antes do `enter` |
 | `touch` | sim | `prop`\*, `gap` | encosta a frente do corpo no prop |
 | `camera` | não | `mode` (`auto`/`follow`/`pan`), `follow`, `pan`, `targets`, `zoom`, `seconds`, `shake`, `margin`, `minZoom`, `maxZoom`, `snap` | câmera |
 | `fx` | opcional | `type`\*, `at`, `dir` + os do efeito | efeito (ver abaixo) |
-| `spawnProp` | não | `type`\* (`door`, `wall`), `id`, `at`\* (canto de cima à esquerda), `size`\*, `state`, `appear` | cria um prop |
+| `spawnProp` | não | `type`\* (`door`, `wall`), `id`, `at`\* (canto de cima à esquerda), `size`\*, `state`, `appear`, `facing` (lado da frente: −1 esquerda, padrão; 1 direita) | cria um prop |
 | `prop` | não | `id`\*, `action`\* (porta: `open`/`close`; ou `remove`), `duration` | muda um prop |
 | `wait` | não | `seconds`\* | só espera (para encadear com `after`) |
 | `parallel` | opcional | `steps`: passos com `delay` | vários juntos; termina quando todos terminam; os filhos herdam o ator |
 
-\* obrigatório. A lista oficial é a tabela `COMMANDS` de `packages/core/src/script.ts` (tipos e
+\* obrigatório.
+
+**Âncoras de prop.** Todo prop tem pontos nomeados, calculados da caixa **atual** (acompanham a posição e o
+tamanho): `center`, `top`, `bottom`, `left`, `right`. A porta (`door`) acrescenta `opening` (meio da passagem) e
+`front` (onde se chega antes de entrar, do lado do `facing`), e `top`/`bottom` são as pontas da passagem. Use-as
+sempre que o personagem interage com um objeto; coordenadas fixas só para posições livres no céu:
+
+```jsonc
+{ "id": "chega", "at": 0.3, "actor": "<id>", "do": "moveTo",
+  "params": { "to": { "prop": "door", "anchor": "front" }, "align": "center", "duration": 1.1 } },
+{ "id": "entra", "after": "chega", "actor": "<id>", "do": "enter", "params": { "prop": "door", "duration": 0.5 } },
+{ "after": "entra", "delay": 0.6, "actor": "<id>", "do": "exit", "params": { "prop": "door", "duration": 0.6 } }
+```
+
+`align: "center"` leva ao destino o **centro visual** do personagem (o centro da caixa da silhueta da pose, que
+não muda com a flutuação nem com o tecido) em vez do quadril; o `enter` e o `exit` sempre alinham por ele. Exemplo
+completo: `assets/scenes/porta-ida-e-volta.json`. Um tipo de prop novo declara as suas em `registerProp`
+(`anchors: { <nome>: (prop) => ({ x, y }) }`) e, se puder ser atravessado, a passagem
+(`opening: (prop) => ({ box, axis: 'x' | 'y' })`).
+
+O `sf validate` confere a passagem na simulação seca: em cada `enter`/`exit` (quando o centro visual cruza o plano)
+e em cada contato com um prop que tem abertura, o centro visual precisa estar dentro do vão; se não estiver, o erro
+diz quantos px e para que lado (`2.41 s: no contato de "<id>" com "door", o centro visual (y 605) fica 15 px acima
+da abertura (y 620–1060): desloque 15 px para baixo …`).
+
+A lista oficial é a tabela `COMMANDS` de `packages/core/src/script.ts` (tipos e
 obrigatórios), com a descrição de cada parâmetro em `COMMAND_DOCS` (`packages/core/src/script-docs.ts`); as duas
 aparecem juntas em `npx sf catalog` e em `scriptSchema()`.
 
@@ -718,9 +745,11 @@ tamanho**.
    provisórias, golpes, clipes, efeitos, props, comandos e eventos).
 2. Escreva `<assets>/scenes/<nome>.json` ([formato](#roteiro-scenesnomejson)). Use a perseguição do repositório
    (`assets/scenes/chase.json`) como modelo: rota com `moveTo`, tiro com `move`, esquiva com `on: incoming:…`, porta com `spawnProp` →
-   `enter` → `prop close`, e a batida com `on: hit:door->…`.
+   `enter` → `prop close`, e a batida com `on: hit:door->…` (a investida mira a âncora `opening` da porta). Para
+   entrar e sair de um objeto, `assets/scenes/porta-ida-e-volta.json`: `moveTo` até a âncora `front`, `enter`, `exit`.
 3. `npx sf validate scenes/<nome>.json` até dar `OK`: formato, nomes, simulação seca (duração,
-   `on` que nunca dispara, ator fora do quadro, cena sem fim) e avisos.
+   `on` que nunca dispara, ator fora do quadro, centro visual fora da abertura num `enter`/`exit` ou num contato
+   com prop, cena sem fim) e avisos.
 4. Veja: `npx sf lab` → `?scene=script&file=scenes/<nome>.json` (barra de tempo para `seek`, câmera lenta e
    laço; `&debug=1` mostra poses e PROVISÓRIA), ou `npx sf preview scenes/<nome>.json`.
 

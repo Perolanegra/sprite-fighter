@@ -1053,4 +1053,38 @@ _(o Claude Code atualiza esta seção ao fim de cada fase)_
     - `npx sf lab` dentro do app: página inicial, tira, Pose Lab e a cena com debug.
     - **Dois defeitos achados e corrigidos:** o texto "copiado de o esqueleto-modelo", e o `sf init` repetido sem `--assets` criando `assets/` ao lado da pasta configurada.
   - **164 testes** (novos: `sf init` em 3 casos; o teste da primeira pose sem `--skeleton` agora confere o modelo).
+- **Âncoras de prop, `enter`/`exit` e conferência da passagem (2026-11-17, versão 0.2.0), a pedido do usuário:**
+  - **Problema (uso real):** o roteiro punha o personagem e o prop em coordenadas fixas, e o personagem errava a porta.
+  - **Âncoras** (`props.ts`):
+    - todo prop tem `center`, `top`, `bottom`, `left` e `right`, calculadas da caixa atual;
+    - a porta acrescenta `opening` e `front` (do lado do `facing` do prop, a 0,9 altura da porta do plano);
+    - o tipo declara `anchors` e `opening` (`{ box, axis }`) no `registerProp`.
+  - **`moveTo`:**
+    - `to: { prop, anchor, offset? }`, relido a cada passo (`MoveTo` aceita `to` função);
+    - `align: "center"` alinha o centro visual.
+  - **Centro visual** (`Actor.visualOffset`): o centro da caixa do alfa da imagem da pose, na escala e no lado
+    atuais, calculado uma vez por pose.
+    - **Decisão:** a primeira versão usava a caixa da malha deformada, que muda com o tecido (5–7 px de erro).
+  - **`enter`/`exit`** (`passage.ts`, puro, mais o `passWatch` do diretor):
+    - plano no meio da abertura; o lado visível é o de onde o ator vem (no `exit`, o do destino);
+    - recorte = o lado de trás do plano, na altura do vão;
+    - `hoverWeight` vai a 0 perto do plano; encolhe até caber em 90 % do vão (no máximo 0,7);
+    - o `exit` volta à escala de antes do `enter`.
+  - **Conferência:**
+    - `Director.passChecks` registra cada cruzamento do plano e cada contato com prop que tem abertura;
+    - `passCheckErrors` (autoria) vira erro no `sf validate`, com o deslocamento em px.
+    - Reproduzido o caso real: a porta da perseguição 320 px abaixo dá "fica 15 px acima da abertura"; com âncora,
+      passa.
+  - **Cenas:**
+    - a perseguição (JSON, API fluente e `perseguicao-telhados`) usa âncora na investida do smith;
+    - cena nova `assets/scenes/porta-ida-e-volta.json` (front → enter → fecha/abre → exit).
+    - **Efeito colateral aceito:** a perseguição agora tem 2 contatos `door->smith`. O clipe `splat` encosta o corpo
+      de novo; o passo `on` só dispara no 1º.
+  - **`narrate.md`:** âncoras e `enter`/`exit` sempre que houver objeto; coordenadas fixas só no céu.
+  - **Conferido:**
+    - capturas da entrada na perseguição (2,3 a 2,64 s), do splat e do ciclo da cena nova (chegada, entrada
+      recortada, porta fechada, saída crescendo, fim na `front`);
+    - **183 testes** (novos: `passage.test.ts` com 16 casos; validate da passagem no CLI).
+  - **Pendência:** não há comando de roteiro para mover um prop. As âncoras já acompanham, mas só por código
+    (`world.props.get(id).box`).
 
