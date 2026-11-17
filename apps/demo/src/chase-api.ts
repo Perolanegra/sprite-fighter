@@ -24,7 +24,7 @@ export function chaseScript() {
     .camera({ targets: ['neo', 'smith', 'door'] })
     .at(2.12).actor('neo').pose('enter')
     .at(2.2).enter('door', 0.5, { ease: 'cubicIn' }).as('entra')
-    .at(2.65).actor('smith').moveTo([2150, 680], 0.7, { ease: 'power2In' })
+    .at(2.65).actor('smith').moveTo({ prop: 'door', anchor: 'opening', offset: [300, 0] }, 0.7, { ease: 'power2In', align: 'center' })
     .after('entra', 0.06).prop('door', 'close', { duration: 0.1 }).as('fecha')
     .on('hit:door->smith').actor('smith')
     .parallel((p) => p.hover().pose('splat', { transition: 'cut' }).touch('door', 6).play('splat', { fade: 0 }).fx('impact_big', { dir: [-1, 0] }).fx('hitstop', { frames: 9 }))

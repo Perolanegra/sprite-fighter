@@ -22,7 +22,7 @@
 
     { "at": 2.12, "actor": "neo", "do": "pose", "params": { "name": "enter" } },
     { "id": "entra", "at": 2.2, "actor": "neo", "do": "enter", "params": { "prop": "door", "duration": 0.5, "ease": "cubicIn" } },
-    { "at": 2.65, "actor": "smith", "do": "moveTo", "params": { "to": [2150, 680], "duration": 0.7, "ease": "power2In" } },
+    { "at": 2.65, "actor": "smith", "do": "moveTo", "params": { "to": { "prop": "door", "anchor": "opening", "offset": [300, 0] }, "align": "center", "duration": 0.7, "ease": "power2In" } },
     { "id": "fecha", "after": "entra", "delay": 0.06, "do": "prop", "params": { "id": "door", "action": "close", "duration": 0.1 } },
 
     { "id": "splat", "on": "hit:door->smith", "actor": "smith", "do": "parallel", "params": { "steps": [
