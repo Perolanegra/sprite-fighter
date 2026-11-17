@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tsbuildinfo
+apps/demo/shots/out/
+tools/atlas/out/
+dist-types/
+
+.angular/
+apps/ng-example/shots/out/

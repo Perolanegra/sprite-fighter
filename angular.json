@@ -1,0 +1,66 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": { "analytics": false, "packageManager": "npm" },
+  "newProjectRoot": "packages",
+  "projects": {
+    "ngx-sprite-fighter": {
+      "projectType": "library",
+      "root": "packages/angular",
+      "sourceRoot": "packages/angular/src",
+      "prefix": "sf",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": { "project": "packages/angular/ng-package.json" },
+          "configurations": {
+            "production": { "tsConfig": "packages/angular/tsconfig.lib.prod.json" },
+            "development": { "tsConfig": "packages/angular/tsconfig.lib.json" }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    },
+    "ng-example": {
+      "projectType": "application",
+      "root": "apps/ng-example",
+      "sourceRoot": "apps/ng-example/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "apps/ng-example/dist",
+            "index": "apps/ng-example/src/index.html",
+            "browser": "apps/ng-example/src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "apps/ng-example/tsconfig.app.json",
+            "styles": ["apps/ng-example/src/styles.css"],
+            "assets": [
+              { "glob": "{skins,moves,clips}/**/*.json", "input": "assets", "output": "/" },
+              { "glob": "scenes/*.json", "input": "assets", "output": "/", "ignore": ["**/*.narrative.json"] },
+              { "glob": "poses/**/*.{webp,json}", "input": "assets", "output": "/", "ignore": ["**/src/**"] }
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [{ "type": "initial", "maximumWarning": "500kB", "maximumError": "1MB" }],
+              "outputHashing": "all"
+            },
+            "development": { "optimization": false, "extractLicenses": false, "sourceMap": true }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": { "port": 4300 },
+          "configurations": {
+            "production": { "buildTarget": "ng-example:build:production" },
+            "development": { "buildTarget": "ng-example:build:development" }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  }
+}
