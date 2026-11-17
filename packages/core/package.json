@@ -1,6 +1,6 @@
 {
   "name": "@perolanegra/sprite-fighter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Player de cenas de luta 2D roteirizadas a partir de poses-imagem (sem dependências). Entrada /authoring: conferência detalhada, schema, API fluente e debug.",
   "type": "module",
   "main": "./dist/index.js",

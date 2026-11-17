@@ -9,6 +9,20 @@ Mudanças de API dos três pacotes, que andam com a mesma versão
 
 Cada versão é publicada no GitHub Packages pela tag `v<versão>` (ver README, "Publicar").
 
+## [0.1.1] - 2026-11-17
+
+### @perolanegra/sprite-fighter-cli
+
+- **Prompts de imagem** (`sf pose:list`, `sf missing`): quando a imagem-fonte de uma pose (`<dir>/src/<pose>.png`) não existe, a referência passa a ser a `.webp` da pose, sem o aviso "NÃO ENCONTRADO". Acontece, por exemplo, num app que importou só as poses prontas. Vale para:
+  - a pose de partida das provisórias;
+  - os `styleRefs` que apontam para a fonte de uma pose (sem repetir a mesma imagem);
+  - a imagem-base das variantes (o "mesmo tamanho de" passa a citar a `.webp`).
+- `imagePrompt` e `variantPrompt` ganharam um último parâmetro opcional, `exists(rel)`. Sem ele, o comportamento é o da 0.1.0 (sempre a fonte); a função nova `poseRef` escolhe entre a fonte e a `.webp`.
+
+### @perolanegra/sprite-fighter e @perolanegra/ngx-sprite-fighter
+
+- Sem mudanças de API: só a versão (os três pacotes andam juntos). O peer do componente e a dependência do CLI passam a `^0.1.1`.
+
 ## [0.1.0] - 2026-11-17
 
 Primeira versão distribuída.

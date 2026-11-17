@@ -1,6 +1,6 @@
 {
   "name": "@perolanegra/sprite-fighter-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI do sprite-fighter (sf): poses (recorte, esqueleto, escala), atlas, narrador (catálogo, validate, missing, preview), lab e init.",
   "type": "module",
   "bin": {
@@ -17,7 +17,7 @@
     "build": "tsc -b && node build-lab.mjs"
   },
   "dependencies": {
-    "@perolanegra/sprite-fighter": "^0.1.0",
+    "@perolanegra/sprite-fighter": "^0.1.1",
     "sharp": "^0.35.5"
   },
   "peerDependencies": {
