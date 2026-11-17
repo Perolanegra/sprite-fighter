@@ -12,7 +12,7 @@ export interface KeyTime {
 }
 
 /** Comandos que mudam o que se vê (o instante logo depois de começarem vale um quadro). */
-const SHOW: Record<string, number> = { pose: 0.1, move: 0.18, enter: 0.25, spawnProp: 0.3, prop: 0.15, expression: 0.05, hand: 0.05, touch: 0.05, fall: 0.3, say: 0.2 };
+const SHOW: Record<string, number> = { pose: 0.1, move: 0.18, enter: 0.25, exit: 0.3, spawnProp: 0.3, prop: 0.15, expression: 0.05, hand: 0.05, touch: 0.05, fall: 0.3, say: 0.2 };
 
 /**
  * Tempos-chave de uma cena, pela simulação seca: logo depois de cada passo que muda o que se vê,

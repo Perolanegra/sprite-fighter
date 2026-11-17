@@ -1,5 +1,5 @@
 import { DataError, Director, SIM_DT, parseScript, type CastMember, type ClipData, type Script } from '@perolanegra/sprite-fighter';
-import { checkScene } from '@perolanegra/sprite-fighter/authoring';
+import { checkScene, passCheckErrors } from '@perolanegra/sprite-fighter/authoring';
 import { checkActions, type DeclaredAction } from './actions.js';
 import { loadCast } from './assets.js';
 import type { Narrative } from './narrative.js';
@@ -30,7 +30,8 @@ type Cast = { characters: Map<string, CastMember>; clips: Map<string, ClipData> 
  *  2. nomes contra os personagens (`checkScene`: poses, golpes, clipes, efeitos, props) e as ações
  *     TS dos golpes contra as embutidas e as de `sf.actions.json`;
  *  3. simulação seca até o fim: duração, passo `on` que nunca dispara, evento esperado que não
- *     acontece, cena sem fim, ator visível fora do quadro; avisos do diretor (variante que falta).
+ *     acontece, cena sem fim, ator visível fora do quadro, centro visual fora da abertura num
+ *     `enter`/`exit` ou num contato com prop (com o deslocamento em px); avisos do diretor.
  */
 export async function validateScene(
   scene: unknown,
@@ -145,6 +146,7 @@ export async function validateScene(
   } catch (e) {
     errors.push(`erro na simulação em ${d.time.toFixed(2)} s: ${msg(e)}`);
   }
+  errors.push(...passCheckErrors(d.passChecks));
   for (const s of d.unfired()) errors.push(`o passo ${s.id ? `"${s.id}" ` : ''}(${s.do}${s.actor ? ` de "${s.actor}"` : ''}) espera "${s.on}"${s.nth > 1 ? ` (${s.nth}ª vez)` : ''}, que nunca acontece`);
   for (const ev of expect) if (!v.events[ev]) errors.push(`a narrativa pede o evento "${ev}", mas ele não acontece (o golpe não acerta? confira distância, direção e tempo)`);
   warnings.push(...d.warnings);

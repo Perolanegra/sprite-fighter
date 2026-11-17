@@ -8,6 +8,7 @@ import {
   FX_TYPES,
   TRANSITIONS,
   actionNames,
+  anchorNames,
   getPropType,
   parseClip,
   parseManifest,
@@ -36,7 +37,8 @@ export interface Catalog {
   >;
   clips: Record<string, { seconds: number; loop: boolean }>;
   fx: string[];
-  props: Record<string, { states: string[]; actions: string[] }>;
+  /** Tipos de prop: estados, ações, âncoras (destinos de `moveTo { to: { prop, anchor } }` e do `exit`) e se tem abertura (`enter`/`exit`). */
+  props: Record<string, { states: string[]; actions: string[]; anchors: string[]; opening: boolean }>;
   /** Ações TS para o `run` das fases: as embutidas e as do app (`sf.actions.json`), com os parâmetros. */
   actions: Record<string, { builtin: boolean; description: string; params: Record<string, string> }>;
   transitions: string[];
@@ -90,7 +92,7 @@ export function buildCatalog(assetsDir: string, declared: DeclaredAction[] | nul
     characters,
     clips,
     fx: [...FX_TYPES, ...Object.keys(FX_PRESETS)].sort(),
-    props: Object.fromEntries(propTypes().map((t) => [t, { states: getPropType(t)!.states, actions: [...Object.keys(getPropType(t)!.actions), 'remove'] }])),
+    props: Object.fromEntries(propTypes().map((t) => [t, { states: getPropType(t)!.states, actions: [...Object.keys(getPropType(t)!.actions), 'remove'], anchors: anchorNames(t), opening: !!getPropType(t)!.opening }])),
     actions: Object.fromEntries([
       ...actionNames().filter(isBuiltinAction).map((n) => [n, { builtin: true, description: '', params: {} }] as const),
       ...(declared ?? []).map((a) => [a.name, { builtin: false, description: a.description, params: a.params }] as const),

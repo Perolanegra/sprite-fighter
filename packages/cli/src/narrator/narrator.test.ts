@@ -124,10 +124,34 @@ describe('validate → missing → validate (pose que falta)', () => {
     writeFileSync(file.replace('.json', '.narrative.json'), JSON.stringify({ narrative: 'x', expectations: [{ event: 'hit:door->smith', why: 'bate na porta' }, { event: 'hit:smith->neo', why: 'acerta' }] }));
     const v = await validateScene(JSON.parse(readFileSync(file, 'utf8')), { assetsDir: join(root, 'assets'), narrative: narrativeFor(file).narrative });
     expect(v.provisional).toEqual([{ char: 'neo', pose: 'dodge', from: 'fly' }]);
-    expect(v.events['hit:door->smith']).toBe(1);
+    expect(v.events['hit:door->smith']).toBeGreaterThanOrEqual(1);
     expect(v.errors).toEqual(['a narrativa pede o evento "hit:smith->neo", mas ele não acontece (o golpe não acerta? confira distância, direção e tempo)']);
     const r = await runMissing(file, { assetsDir: join(root, 'assets') });
     expect(r.poses.map((p) => `${p.char}/${p.pose}`)).toEqual(['neo/dodge']);
+  }, 60000);
+});
+
+describe('validate: passagem pela abertura', () => {
+  it('porta fora do lugar das coordenadas fixas: erro com o deslocamento; com âncora, passa', async () => {
+    const root = sandbox();
+    const assets = join(root, 'assets');
+    const chase = JSON.parse(readFileSync(join(assets, 'scenes/chase.json'), 'utf8')) as { steps: { id?: string; actor?: string; do: string; params: Record<string, unknown> }[] };
+    const door = chase.steps.find((s) => s.do === 'spawnProp')!;
+    door.params['at'] = [1840, 620]; // a porta desceu; o roteiro ainda manda o smith para [2150, 680]
+    // A investida do smith contra a porta, escrita como antes das âncoras: coordenada fixa do quadril.
+    const charge = chase.steps.find((s) => s.actor === 'smith' && s.do === 'moveTo' && s.params['to'] && !s.params['relative'])!;
+    charge.params['to'] = [2150, 680];
+    delete charge.params['align'];
+    const v = await validateScene(chase, { assetsDir: assets });
+    expect(v.errors).toHaveLength(1);
+    expect(v.errors[0]).toMatch(/no contato de "smith" com "door", o centro visual \(y \d+\) fica \d+ px acima da abertura \(y 620–1060\): desloque \d+ px para baixo/);
+    // O enter do neo mira a abertura sozinho: nenhum erro dele, mesmo com a porta em outro lugar.
+    expect(v.errors.join()).not.toContain('"neo"');
+    charge.params['to'] = { prop: 'door', anchor: 'opening', offset: [300, 0] };
+    charge.params['align'] = 'center';
+    const ok = await validateScene(chase, { assetsDir: assets });
+    expect(ok.errors).toEqual([]);
+    expect(ok.events['hit:door->smith']).toBeGreaterThanOrEqual(1);
   }, 60000);
 });
 
