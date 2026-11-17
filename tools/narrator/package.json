@@ -1,0 +1,21 @@
+{
+  "name": "@sprite-fighter/narrator",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ferramentas determinísticas (sem IA) para cenas escritas a partir de uma narrativa: catálogo, validate, missing, preview.",
+  "type": "module",
+  "bin": {
+    "sf-narrate": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@sprite-fighter/atlas": "*",
+    "sharp": "^0.35.5",
+    "sprite-fighter": "*",
+    "playwright": "^1.65.1",
+    "vite": "^8.3.8"
+  }
+}
