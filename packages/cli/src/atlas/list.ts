@@ -50,7 +50,7 @@ export async function runPoseList(argv: string[], root: string): Promise<void> {
     const why = m.provisional[name] ? `provisória a partir de "${m.provisional[name]!.from}"` : 'sem imagem';
     console.log(`\n── ${name} (${why}) ${'─'.repeat(Math.max(4, 50 - name.length))}`);
     try {
-      const p = imagePrompt(m, name);
+      const p = imagePrompt(m, name, undefined, undefined, (rel) => existsSync(join(assetsDir(root), rel)));
       // Primeira pose de um personagem novo: ainda não há esqueleto deste personagem para copiar.
       if (name === m.default && !existsSync(join(assetsDir(root), m.dir, `${name}.skin.json`)))
         p.next[1] += '   (primeira pose: o esqueleto inicial é o modelo "humanoide"; --skeleton <id> copia o de outro personagem)';

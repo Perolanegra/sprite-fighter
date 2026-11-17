@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseManifest } from '@perolanegra/sprite-fighter';
-import { imagePrompt } from './prompt.js';
+import { imagePrompt, variantPrompt } from './prompt.js';
 
 const m = parseManifest(
   {
@@ -28,5 +28,19 @@ describe('prompt de imagem', () => {
 
   it('sem descrição: erro claro', () => {
     expect(() => imagePrompt(m, 'blank')).toThrow(/sem descrição/);
+  });
+
+  it('sem a imagem-fonte da pose (src/*.png), usa a .webp dela como referência, sem repetir', () => {
+    const noSources = (rel: string) => !rel.includes('/src/');
+    // styleRefs aponta para src/fly.png e a pose de partida da provisória também é fly: uma referência só.
+    expect(imagePrompt(m, 'dodge', undefined, undefined, noSources).attach).toEqual(['poses/col/hero/fly.webp']);
+    // Com a fonte presente, continua sendo a fonte.
+    expect(imagePrompt(m, 'dodge', undefined, undefined, () => true).attach).toEqual(['poses/col/hero/src/fly.png']);
+  });
+
+  it('variante: sem a fonte da pose, a imagem a editar é a .webp (e o "mesmo tamanho" é o dela)', () => {
+    const v = variantPrompt(m, 'fly', 'angry', 'expression', 'bravo', [], (rel) => !rel.includes('/src/'));
+    expect(v.attach).toEqual(['poses/col/hero/fly.webp']);
+    expect(v.next[0]).toMatch(/mesmo tamanho de assets\/poses\/col\/hero\/fly\.webp/);
   });
 });

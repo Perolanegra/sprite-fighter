@@ -45,6 +45,8 @@ export async function runMissing(scenePath: string, o: { assetsDir: string; prov
   const script = parseScript(JSON.parse(readFileSync(scenePath, 'utf8')), 'cena');
   const { narrative } = narrativeFor(scenePath);
   const declared = narrative?.missing ?? [];
+  // Referências dos prompts: a fonte da pose ou, sem ela, a .webp (ver poseRef).
+  const exists = (rel: string) => existsSync(join(o.assetsDir, rel));
   const created: MissingReport['created'] = [];
   if (o.provisional !== false)
     for (const m of declared)
@@ -80,7 +82,7 @@ export async function runMissing(scenePath: string, o: { assetsDir: string; prov
       const decl = declared.find((m): m is Extract<Missing, { kind: 'pose' }> => m.kind === 'pose' && m.char === char && m.name === name);
       if (!prov && !decl) continue; // tem imagem
       if (!prov && decl && o.provisional !== false) continue; // não deveria acontecer: acabou de ser criada
-      const p = imagePrompt(manifest, name, decl?.description ?? prov?.description, decl?.tags ?? prov?.tags);
+      const p = imagePrompt(manifest, name, decl?.description ?? prov?.description, decl?.tags ?? prov?.tags, exists);
       // Sem a provisória gravada, a pose de partida não está no manifesto: anexa a mais parecida.
       const closest = `${manifest.dir}/src/${decl?.closest ?? prov?.from}.png`;
       poses.push({ ...p, char, attach: p.attach.includes(closest) ? p.attach : [...p.attach, closest], status: prov ? `provisória ← ${prov.from}` : `falta (provisória não gravada: --no-provisional)` });
@@ -88,7 +90,7 @@ export async function runMissing(scenePath: string, o: { assetsDir: string; prov
   }
   const variants = declared
     .filter((m): m is Extract<Missing, { kind: 'variant' }> => m.kind === 'variant')
-    .map((m) => ({ ...variantPrompt(readManifest(o.assetsDir, m.char), m.pose, m.name, m.variantKind, m.description, m.tags), char: m.char }));
+    .map((m) => ({ ...variantPrompt(readManifest(o.assetsDir, m.char), m.pose, m.name, m.variantKind, m.description, m.tags, exists), char: m.char }));
   const moves = declared.filter((m): m is Extract<Missing, { kind: 'move' }> => m.kind === 'move');
 
   const block = (title: string, p: ImagePrompt) =>
