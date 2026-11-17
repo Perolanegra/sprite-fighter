@@ -1,0 +1,16 @@
+[
+  { "name": "chase-smith-fly-shoot", "query": "scene=chase", "at": "pose:smith:1", "from": -1, "to": 6 },
+  { "name": "chase-smith-shoot-fly", "query": "scene=chase", "at": "pose:smith:2", "from": -1, "to": 6 },
+  { "name": "chase-neo-dodge", "query": "scene=chase", "at": "pose:neo:1", "from": -1, "to": 6 },
+  { "name": "chase-neo-dodge-back", "query": "scene=chase", "at": "pose:neo:2", "from": -1, "to": 6 },
+  { "name": "chase-door-splat", "query": "scene=chase", "at": "hit:1", "from": -2, "to": 9 },
+  { "name": "chase-splat-fall", "query": "scene=chase", "at": "pose:smith:6", "from": -13, "to": 6, "cols": 5 },
+  { "name": "combo-jab-pose", "query": "scene=combo", "at": "pose:smith:1", "from": -1, "to": 6 },
+  { "name": "combo-hit1-jab", "query": "scene=combo", "at": "hit:1", "from": -1, "to": 10 },
+  { "name": "combo-hit2-jab2", "query": "scene=combo", "at": "hit:2", "from": -1, "to": 10 },
+  { "name": "combo-hit3-heavy", "query": "scene=combo", "at": "hit:3", "from": -1, "to": 22, "cols": 6, "scale": 0.45 },
+  { "name": "combo-return-fly", "query": "scene=combo", "at": "pose:smith:2", "from": -1, "to": 6 },
+  { "name": "combo-dash-strike", "query": "scene=combo&combo=dash_strike", "at": "pose:smith:1", "from": -1, "to": 10 },
+  { "name": "gl0-chase-smith-fly-shoot", "query": "scene=chase&gl=0", "at": "pose:smith:1", "from": -1, "to": 6 },
+  { "name": "gl0-combo-hit3-heavy", "query": "scene=combo&gl=0", "at": "hit:3", "from": -1, "to": 10, "cols": 4 }
+]
