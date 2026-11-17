@@ -1,4 +1,4 @@
-import { CanvasRenderer, Skeleton, VARIANT_SILHOUETTE_WARN, silhouetteDiff, type ImagePose } from 'sprite-fighter';
+import { CanvasRenderer, Skeleton, VARIANT_SILHOUETTE_WARN, silhouetteDiff, type ImagePose } from '@perolanegra/sprite-fighter';
 import { loadCharacter, type CharName } from '../assets';
 
 /**

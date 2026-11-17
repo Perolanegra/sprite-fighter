@@ -1,4 +1,4 @@
-import { createRng, type ParallaxLayer } from 'sprite-fighter';
+import { createRng, type ParallaxLayer } from '@perolanegra/sprite-fighter';
 
 /**
  * Cenário da demo em camadas (paralaxe): nuvens, cidade ao longe, cidade no meio e prédios

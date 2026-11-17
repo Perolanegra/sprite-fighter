@@ -9,6 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "sprite-fighter": "*"
+    "@perolanegra/sprite-fighter": "*"
   }
 }

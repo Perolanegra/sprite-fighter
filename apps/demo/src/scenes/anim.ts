@@ -1,4 +1,4 @@
-import { Actor, CanvasRenderer, FixedClock, runLoop, SIM_DT, type Character, type ClipData, type PoseTransition, type SkinKind } from 'sprite-fighter';
+import { Actor, CanvasRenderer, FixedClock, runLoop, SIM_DT, type Character, type ClipData, type PoseTransition, type SkinKind } from '@perolanegra/sprite-fighter';
 import { listCharacters, loadCharacter, type CharName } from '../assets';
 import { loadClips } from '../clips';
 import { loadClipPoses } from '../poses';

@@ -1,4 +1,4 @@
-import { parsePose, type Character, type ClipData, type PoseData } from 'sprite-fighter';
+import { parsePose, type Character, type ClipData, type PoseData } from '@perolanegra/sprite-fighter';
 
 /** Carrega a pose nomeada de um personagem (assets/poses/<char>/<nome>.json). */
 export async function loadPose(char: Character, name: string): Promise<PoseData> {

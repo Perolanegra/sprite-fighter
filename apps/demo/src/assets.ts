@@ -1,4 +1,4 @@
-import { Character } from 'sprite-fighter';
+import { Character } from '@perolanegra/sprite-fighter';
 
 /** Id do personagem (o nome do manifesto em assets/skins/<id>.json). */
 export type CharName = string;

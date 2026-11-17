@@ -1,5 +1,5 @@
-import { CanvasRenderer, FixedClock, SIM_DT, World, drawParallax, drawProjectiles, parseMoves, runLoop, type MoveData, type ParallaxLayer } from 'sprite-fighter';
-import { drawFightDebug } from 'sprite-fighter/authoring';
+import { CanvasRenderer, FixedClock, SIM_DT, World, drawParallax, drawProjectiles, parseMoves, runLoop, type MoveData, type ParallaxLayer } from '@perolanegra/sprite-fighter';
+import { drawFightDebug } from '@perolanegra/sprite-fighter/authoring';
 import type { CharName } from './assets';
 
 /** Golpes de um personagem (assets/moves/<char>.moves.json); sem o arquivo, nenhum golpe. */

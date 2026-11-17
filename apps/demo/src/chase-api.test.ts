@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { parseScript } from 'sprite-fighter';
+import { parseScript } from '@perolanegra/sprite-fighter';
 import { chaseScript } from './chase-api';
 
 describe('perseguição: API fluente ≡ JSON', () => {

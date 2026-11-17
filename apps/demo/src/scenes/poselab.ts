@@ -1,4 +1,4 @@
-import { apply, deg2rad, invert, multiply, rad2deg, scaling, translation, CanvasRenderer, type Character, type Mat2D, type Skeleton } from 'sprite-fighter';
+import { apply, deg2rad, invert, multiply, rad2deg, scaling, translation, CanvasRenderer, type Character, type Mat2D, type Skeleton } from '@perolanegra/sprite-fighter';
 import { listCharacters, loadCharacter, type CharName } from '../assets';
 import { drawBones } from '../debug';
 import { loadPose, savePose } from '../poses';

@@ -1,4 +1,4 @@
-import { script } from 'sprite-fighter/authoring';
+import { script } from '@perolanegra/sprite-fighter/authoring';
 
 /**
  * A perseguição escrita com a API fluente. Gera o mesmo roteiro de `assets/scenes/chase.json`

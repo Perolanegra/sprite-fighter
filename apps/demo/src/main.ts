@@ -1,4 +1,4 @@
-import { VERSION } from 'sprite-fighter';
+import { VERSION } from '@perolanegra/sprite-fighter';
 import { rigScene } from './scenes/rig';
 
 /**
@@ -6,9 +6,10 @@ import { rigScene } from './scenes/rig';
  * Quando a cena termina de montar, marca <body data-ready="true"> (o `npm run shots` espera isso).
  */
 const params = new URLSearchParams(location.search);
-const scene = params.get('scene') ?? 'rig';
+const scene = params.get('scene') ?? 'home';
 
 const scenes: Record<string, (canvas: HTMLCanvasElement, params: URLSearchParams) => Promise<void>> = {
+  home: async (canvas) => (await import('./scenes/home')).homeScene(canvas),
   rig: rigScene,
   poselab: async (canvas, p) => (await import('./scenes/poselab')).poseLabScene(canvas, p),
   anim: async (canvas, p) => (await import('./scenes/anim')).animScene(canvas, p),

@@ -1,4 +1,4 @@
-import { Actor, Hover, World, type Character, type ClipData } from 'sprite-fighter';
+import { Actor, Hover, World, type Character, type ClipData } from '@perolanegra/sprite-fighter';
 import { loadCharacter } from '../assets';
 import { loadClips } from '../clips';
 import { cityLayers } from '../backdrop';

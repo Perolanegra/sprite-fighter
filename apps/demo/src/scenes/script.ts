@@ -1,5 +1,5 @@
-import { SIM_DT, Scene, hasAction, registerAction, type CanvasRenderer, type CastMember } from 'sprite-fighter';
-import { checkScene, drawFightDebug } from 'sprite-fighter/authoring';
+import { SIM_DT, Scene, hasAction, registerAction, type CanvasRenderer, type CastMember } from '@perolanegra/sprite-fighter';
+import { checkScene, drawFightDebug } from '@perolanegra/sprite-fighter/authoring';
 import { loadCharacter, type CharName } from '../assets';
 import { loadClips } from '../clips';
 import { cityLayers } from '../backdrop';

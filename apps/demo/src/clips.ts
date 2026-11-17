@@ -1,4 +1,4 @@
-import { parseClip, type ClipData } from 'sprite-fighter';
+import { parseClip, type ClipData } from '@perolanegra/sprite-fighter';
 
 let library: Promise<Map<string, ClipData>> | null = null;
 

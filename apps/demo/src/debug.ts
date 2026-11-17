@@ -1,4 +1,4 @@
-import type { CanvasRenderer, Skeleton } from 'sprite-fighter';
+import type { CanvasRenderer, Skeleton } from '@perolanegra/sprite-fighter';
 
 /** Desenha os ossos: pivô (ponto), eixo até a outra ponta (linha) e, se pedido, o nome. */
 export function drawBones(r: CanvasRenderer, s: Skeleton, opts: { selected?: number; names?: boolean } = {}): void {

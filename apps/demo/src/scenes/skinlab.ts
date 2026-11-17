@@ -1,5 +1,5 @@
-import { assembleImagePose, CanvasRenderer, Skeleton, type Character, type ImagePose, type SkinSpec, type Vec2 } from 'sprite-fighter';
-import { drawSkinDebug } from 'sprite-fighter/authoring';
+import { assembleImagePose, CanvasRenderer, Skeleton, type Character, type ImagePose, type SkinSpec, type Vec2 } from '@perolanegra/sprite-fighter';
+import { drawSkinDebug } from '@perolanegra/sprite-fighter/authoring';
 import { listCharacters, loadCharacter, type CharName } from '../assets';
 
 /**

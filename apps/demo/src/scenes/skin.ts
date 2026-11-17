@@ -1,5 +1,5 @@
-import { Actor, CanvasRenderer, SIM_DT, Skeleton, type ClipData } from 'sprite-fighter';
-import { drawSkinDebug } from 'sprite-fighter/authoring';
+import { Actor, CanvasRenderer, SIM_DT, Skeleton, type ClipData } from '@perolanegra/sprite-fighter';
+import { drawSkinDebug } from '@perolanegra/sprite-fighter/authoring';
 import { loadCharacter, type CharName } from '../assets';
 import { loadClips } from '../clips';
 import { drawBones } from '../debug';

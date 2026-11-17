@@ -1,4 +1,4 @@
-import { CanvasRenderer } from 'sprite-fighter';
+import { CanvasRenderer } from '@perolanegra/sprite-fighter';
 import { listCharacters, loadCharacter } from '../assets';
 import { drawBones } from '../debug';
 
