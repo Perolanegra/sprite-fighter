@@ -1,7 +1,7 @@
 /**
  * sprite-fighter/authoring: o que serve para escrever e conferir cenas, fora do bundle do player.
  *
- *   import { checkScene, script, drawFightDebug } from 'sprite-fighter/authoring';
+ *   import { checkScene, script, drawFightDebug } from '@perolanegra/sprite-fighter/authoring';
  *
  * - conferência detalhada do roteiro contra os personagens (`checkScene`, `checkScript`);
  * - JSON Schema e descrição dos comandos (`scriptSchema`, `COMMAND_DOCS`);

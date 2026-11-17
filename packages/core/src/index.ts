@@ -4,7 +4,7 @@
  * roteiro, JSON Schema e docs dos comandos, API fluente, desenho de debug) fica em
  * `sprite-fighter/authoring`.
  */
-export const VERSION = '0.0.0';
+export const VERSION = '0.1.0';
 
 export * from './math.js';
 export { PartGeometry, opaquePoints, type Box } from './geometry.js';

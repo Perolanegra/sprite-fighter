@@ -1,7 +1,7 @@
 {
-  "name": "sprite-fighter",
-  "version": "0.0.0",
-  "description": "Personagens articulados a partir de folhas de peças PNG e cenas de luta 2D roteirizadas.",
+  "name": "@perolanegra/sprite-fighter",
+  "version": "0.1.0",
+  "description": "Player de cenas de luta 2D roteirizadas a partir de poses-imagem (sem dependências). Entrada /authoring: conferência detalhada, schema, API fluente e debug.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,10 +16,21 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/*.map",
+    "README.md"
   ],
   "sideEffects": false,
   "scripts": {
     "build": "tsc -b"
+  },
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Perolanegra/sprite-fighter.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
