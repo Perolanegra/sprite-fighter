@@ -21,8 +21,14 @@ critérios de pronto da fase estiverem cumpridos.
 Fundo das folhas: branco quase puro. As peças estão espaçadas, sem se tocar.
 
 ## Regras técnicas
-- TypeScript `strict`. Monorepo com npm workspaces (`packages/*`, `apps/*`, `tools/*`).
-- `packages/core` **sem dependências de runtime**. Renderização em Canvas 2D próprio.
+- TypeScript `strict` (5.9, por causa do Angular 21). Monorepo com npm workspaces (`packages/*`, `apps/*`).
+- **Três pacotes publicados** (escopo `@perolanegra`, mesma versão, `CHANGELOG.md` a cada mudança de API):
+  - `packages/core` → `@perolanegra/sprite-fighter`: o player, **sem dependências de runtime**, mais a entrada
+    `/authoring` (o que é só de autoria fica fora do player);
+  - `packages/angular` → `@perolanegra/ngx-sprite-fighter`: compilado com **Angular 21** (peers `^21`);
+  - `packages/cli` → `@perolanegra/sprite-fighter-cli`: o bin `sf` (poses, atlas, narrador, `init`, `lab`).
+  Os assets de personagem nunca entram nos pacotes. `npm run pack:all` gera os `.tgz`; a tag `v*` publica.
+- Renderização em Canvas 2D/WebGL próprio.
 - **Core genérico:** nenhum id, nome ou pasta de personagem no código do `core`, nem em comentários (use `<id>`
   nos exemplos). Tudo que é de um personagem vem dos manifestos e assets. O teste `generic.test.ts` garante isso.
 - Simulação com **passo fixo de 120 Hz** + interpolação na renderização (rAF). Nada de lógica dependente de FPS.

@@ -1023,4 +1023,34 @@ _(o Claude Code atualiza esta seção ao fim de cada fase)_
     - o quadro em t = 0 é o enquadramento calculado à parte (centro da caixa dos atores e o zoom que a faz caber com a margem), com os atores no lugar. Sem a correção, ele falha;
     - `seek(0)` depois de tocar, e um tamanho novo em t = 0, também saem enquadrados;
     - entre passos consecutivos, a câmera continua suavizada.
+- **Distribuição em 3 pacotes (2026-11-17), a pedido do usuário:** escopo `@perolanegra`, versão 0.1.0 nos três, `CHANGELOG.md` na raiz.
+  - **Base do repositório:** Angular 22 → **21.2** (ng-packagr 21.2.7), TypeScript 6.0 → **5.9.3** (o Angular 21 exige `>=5.9 <6.0`) e Vitest 5 → **4.1.12** (o `@angular/build` 21 pede `^4`).
+    - O npm 10.9 falha com `edgesOut` nos peers opcionais do Vitest; o `package.json` fixa a família `@vitest/*` em `overrides`.
+    - Num app novo, o npm 11 resolve sem isso.
+    - Os 163 testes passam, e a perseguição em 1,6 s dá o mesmo md5 de antes.
+  - **`@perolanegra/sprite-fighter`** (`packages/core`):
+    - o player sem dependências mais `/authoring`;
+    - os `.map` saem do pacote (apontavam para `src/`, que não vai);
+    - 125 KB, 88 arquivos.
+  - **`@perolanegra/ngx-sprite-fighter`** (`packages/angular/dist`):
+    - compilado pelo Angular 21.2.26; peers `@angular/core` e `@angular/common` `^21.0.0` e `@perolanegra/sprite-fighter` `^0.1.0`;
+    - 13 KB.
+  - **`@perolanegra/sprite-fighter-cli`** (`packages/cli`, que junta `tools/atlas` e `tools/narrator` com `git mv`):
+    - **bin `sf`:** `init`, `lab`, `pose:add`, `pose:list`, `normalize`, `pose`, `sheet`, `catalog`, `validate`, `missing`, `preview`;
+    - **pasta de assets:** `--assets`, `SF_ASSETS`, o `assets` do `sf.config.json` ou `assets/` (`src/paths.ts`); as mensagens e os prompts usam a pasta configurada e `npx sf …`;
+    - **`sf init`:** pasta de assets com os clipes genéricos (`templates/clips`), `sf.config.json`, `sf.actions.json` de exemplo e `.claude/commands/narrate.md`. Não sobrescreve sem `--force`; sem `--assets`, usa a pasta já configurada;
+    - **`sf lab`:** um servidor Node próprio (`src/lab/server.ts`) que serve a demo compilada (`lab/`, gerada pelo Vite no modo `lab`, sem os assets) e os assets do projeto. As rotas `/__sf/*` (`src/lab/endpoints.ts`) são as mesmas do `npm run dev`, cuja configuração do Vite as importa. A página inicial nova (`?scene=home`, o padrão) lista personagens e cenas;
+    - **`preview`:** usa o lab (sem Vite) e grava em `.sf/preview/<cena>/`. Playwright é peer opcional, com mensagem se faltar;
+    - **esqueleto-modelo `humanoide`** (`templates/skeletons`, os 16 ossos do corpo da `fly` do smith, sem tecido): a primeira pose de um personagem sem `--skeleton` parte dele;
+    - o `/narrate` agora é um só (`npx sf …`, `<assets>` do `sf.config.json`), copiado para `templates/` no build;
+    - 123 KB.
+  - **`npm run pack:all`** (`scripts/pack-all.mjs`): compila e gera os 3 `.tgz` em `dist/packs/`. Confere que o player não tem dependências, que as versões são iguais e que nenhum asset de personagem entra.
+  - **Workflow** `.github/workflows/publish.yml`: na tag `v*`, usa npm 11, `npm ci`, confere tag = versão, compila, testa e publica os 3 no GitHub Packages com o `GITHUB_TOKEN` (`packages: write`).
+  - **README:** pacotes, instalar num app (`.npmrc` com o escopo e token `read:packages`), testar com `.tgz`, publicar, desenvolver no repositório, e os guias e ferramentas com `npx sf` e `<assets>`.
+  - **Teste de ponta a ponta** (fora do repositório, app novo do `@angular/cli@21`, npm 11):
+    - instalou os 3 `.tgz`; `npx sf init --assets public/sf`; `npx sf pose:add` de `fly` (modelo `humanoide`) e `punch`; cena escrita à mão e `npx sf validate` OK;
+    - `<sf-scene>` no `App`, com `ng build` servido estático: "pronta: 3,55 s", sem erro no console; voo, soco e balão aparecem; o `authoring` ficou num chunk preguiçoso de 5 KB;
+    - `npx sf lab` dentro do app: página inicial, tira, Pose Lab e a cena com debug.
+    - **Dois defeitos achados e corrigidos:** o texto "copiado de o esqueleto-modelo", e o `sf init` repetido sem `--assets` criando `assets/` ao lado da pasta configurada.
+  - **164 testes** (novos: `sf init` em 3 casos; o teste da primeira pose sem `--skeleton` agora confere o modelo).
 
